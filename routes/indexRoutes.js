@@ -3,6 +3,7 @@ const mainRoutes = Router();
 
 const productoRoutes = require('./productoRoutes')
 const userRoutes = require('./userRoutes')
+const tiendaRoutes = require('./tiendaRoutes')
 const produccionesRoutes = require('./produccionRoutes')
 const clienteRoutes = require('./clienteRoutes')
 const reposicionRoutes = require('./reposicionRoutes')
@@ -11,6 +12,7 @@ const pedidoRoutes = require('./pedidoRoutes')
 
 mainRoutes.use('/productos', productoRoutes)
 mainRoutes.use('/usuarios', userRoutes)
+mainRoutes.use('/tiendas', tiendaRoutes)
 mainRoutes.use('/producciones', produccionesRoutes)
 mainRoutes.use('/clientes', clienteRoutes)
 mainRoutes.use('/reposiciones', reposicionRoutes)
