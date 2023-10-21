@@ -1,6 +1,6 @@
-const Reposicion = require('../../models/Reposicion');
-const Producto = require('../../models/Producto');
-const Cliente = require('../../models/Cliente.js')
+const Reposicion = require('../../models/reposicion/Reposicion.js');
+const Producto = require('../../models/producto/Producto.js');
+const Cliente = require('../../models/cliente/Cliente.js')
 
 // Controlador para agregar una reposición de productos
 const agregarReposicion = async (req, res) => {

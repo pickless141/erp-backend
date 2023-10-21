@@ -1,25 +1,25 @@
-const Cliente = require('../../models/Cliente.js');
+const Cliente = require('../../models/cliente/Cliente.js');
 
-/// Controlador para crear un nuevo cliente
+// Controlador para crear un nuevo cliente y mostrar un mensaje de éxito
 const crearCliente = async (req, res) => {
-    const { empresa, email, ruc, direccion, telefono } = req.body;
-  
-    try {
-      const nuevoCliente = new Cliente({
-        empresa,
-        email,
-        ruc,
-        direccion,
-        telefono,
-      });
-  
-      await nuevoCliente.save();
-  
-      res.status(201).json({ mensaje: 'Cliente creado exitosamente', cliente: nuevoCliente });
-    } catch (error) {
-        console.log(error)
-      res.status(500).json({ error: 'Error al crear un nuevo cliente' });
-    }
+  const { nombre, empresa, email, ruc, telefono } = req.body;
+
+  try {
+    const nuevoCliente = new Cliente({
+      nombre,
+      empresa,
+      email,
+      ruc,
+      telefono,
+    });
+
+    await nuevoCliente.save();
+
+    res.status(201).json({ mensaje: 'Cliente creado exitosamente', cliente: nuevoCliente });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Error al crear un nuevo cliente' });
+  }
 };
 
 // Controlador para obtener todos los clientes
