@@ -1,4 +1,4 @@
-const Producto = require('../../models/Producto.js');
+const Producto = require('../../models/producto/Producto.js');
 
 // Controlador para crear un nuevo producto
 const crearProducto = async (req, res) => {

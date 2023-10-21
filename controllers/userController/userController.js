@@ -1,4 +1,4 @@
-const Usuario = require('../../models/User'); // Asegúrate de importar tu modelo de usuario
+const Usuario = require('../../models/user/User.js'); // Asegúrate de importar tu modelo de usuario
 const bcrypt = require('bcrypt');
 
 // Controlador para crear un nuevo usuario

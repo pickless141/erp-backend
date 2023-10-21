@@ -1,4 +1,4 @@
-const Produccion = require('../../models/Produccion.js');
+const Produccion = require('../../models/produccion/Produccion.js');
 
 // Controlador para crear una nueva producción
 const crearProduccion = async (req, res) => {

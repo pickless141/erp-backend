@@ -1,6 +1,6 @@
-const Pedido = require('../../models/Pedido.js');
-const Producto = require('../../models/Producto.js');
-const Cliente = require('../../models/Cliente.js')
+const Pedido = require('../../models/pedido/Pedido.js');
+const Producto = require('../../models/producto/Producto.js');
+const Cliente = require('../../models/cliente/Cliente.js')
 
 // Controlador para crear un nuevo pedido
 const crearPedido = async (req, res) => {
