@@ -6,6 +6,7 @@ const tiendaSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Cliente',
   },
+  nombreTienda: String,
   direccion: String,
 });
 
