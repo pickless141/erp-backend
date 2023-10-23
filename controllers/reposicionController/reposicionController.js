@@ -1,82 +1,79 @@
 const Reposicion = require('../../models/reposicion/Reposicion.js');
 const Producto = require('../../models/producto/Producto.js');
-const Cliente = require('../../models/cliente/Cliente.js')
+const Tienda = require('../../models/tienda/Tienda.js')
 
-// Controlador para agregar una reposición de productos
+// Controlador para crear una reposición de productos en una tienda
 const agregarReposicion = async (req, res) => {
-    const { cantidadAnterior, fechaReposicion, cliente, productos } = req.body;
-  
-    try {
-      // Verifica si el cliente existe
-      const clienteExistente = await Cliente.findById(cliente);
-      if (!clienteExistente) {
-        return res.status(404).json({ error: 'El cliente no existe' });
-      }
-  
-      // Verifica si los productos existen en el modelo de Producto y almacena los productos válidos
-      const productosValidos = [];
-      for (const productoInfo of productos) {
-        const productoExistente = await Producto.findById(productoInfo.producto);
-        if (productoExistente) {
-          productosValidos.push({
-            producto: productoInfo.producto,
-            cantidad: productoInfo.cantidad,
-          });
-        }
-      }
-  
-      // Crea una nueva reposición con los productos válidos
-      const nuevaReposicion = new Reposicion({
-        cantidadAnterior,
-        fechaReposicion,
-        cliente,
-        productos: productosValidos, // Asigna la lista de productos válidos a la reposición
-      });
-  
-      await nuevaReposicion.save();
-  
-      res.status(201).json({ message: 'Reposición añadida con éxito', nuevaReposicion });
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ error: 'Error al agregar una reposición de productos' });
+  try {
+    // Obten los datos del cuerpo de la solicitud
+    const { tiendaId, existenciaAnterior, existenciaActual } = req.body;
+
+    // Verifica si la tienda existe
+    const tienda = await Tienda.findById(tiendaId);
+    if (!tienda) {
+      return res.status(404).json({ error: 'La tienda no existe' });
     }
+
+    // Crea la reposición de productos
+    const nuevaReposicion = new Reposicion({
+      tienda: tiendaId,
+      existenciaAnterior,
+      existenciaActual,
+    });
+
+    // Guarda la reposición en la base de datos
+    await nuevaReposicion.save();
+
+    res.status(201).json({ mensaje: 'Reposición creada exitosamente', reposicion: nuevaReposicion });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al crear una nueva reposición en la tienda' });
+  }
 };
 
 // Controlador para obtener todas las reposiciones
 const obtenerTodasLasReposiciones = async (req, res) => {
-    try {
-      const reposiciones = await Reposicion.find().populate('cliente productos.producto cantidadAnterior.producto');
-      
-      if (reposiciones.length === 0) {
-        return res.status(200).json({ message: 'No hay reposiciones registradas' });
-      }
-  
-      res.status(200).json(reposiciones);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al obtener las reposiciones' });
-    }
+  try {
+    const reposiciones = await Reposicion.find();
+
+    res.status(200).json(reposiciones);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener las reposiciones' });
+  }
 };
 
-// Controlador para obtener una reposición por su ID
-const obtenerReposicionPorId = async (req, res) => {
-    const reposicionId = req.params.id; // El ID se tomará de los parámetros de la ruta
-  
-    try {
-      const reposicion = await Reposicion.findById(reposicionId)
-        .populate('productos.producto')
-        .populate('cantidadAnterior.producto')
-        .populate('cliente');
-  
-      if (!reposicion) {
-        return res.status(404).json({ message: 'La reposición no existe' });
-      }
-  
-      res.status(200).json(reposicion);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al obtener la reposición por ID' });
+// Controlador para buscar una reposición por ID
+const buscarReposicionPorId = async (req, res) => {
+  const reposicionId = req.params.id; // Obtén el ID de la reposición desde los parámetros de la ruta
+
+  try {
+    const reposicion = await Reposicion.findById(reposicionId)
+      .select('existenciaAnterior existenciaActual fechaReposicion')
+      .exec();
+
+    if (!reposicion) {
+      return res.status(404).json({ error: 'Reposición no encontrada' });
     }
+
+    res.status(200).json(reposicion);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al buscar la reposición' });
+  }
+};
+// Controlador para obtener todas las reposiciones de una tienda
+const obtenerReposicionesPorTienda = async (req, res) => {
+  const tiendaId = req.params.tiendaId; // Obten el ID de la tienda desde los parámetros de la ruta
+
+  try {
+    const reposiciones = await Reposicion.find({ tienda: tiendaId });
+
+    res.status(200).json(reposiciones);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener las reposiciones de la tienda' });
+  }
 };
 
-module.exports = { agregarReposicion, obtenerTodasLasReposiciones, obtenerReposicionPorId };
+module.exports = { agregarReposicion, obtenerTodasLasReposiciones, obtenerReposicionesPorTienda, buscarReposicionPorId };
