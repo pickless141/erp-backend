@@ -1,34 +1,47 @@
 const Produccion = require('../../models/produccion/Produccion.js');
+const Producto = require('../../models/producto/Producto.js');
 
-// Controlador para crear una nueva producción
-const crearProduccion = async (req, res) => {
-  const { productoProducido, fechaProduccion, cantidadProducida } = req.body;
-
+// Controlador para registrar una producción
+const registrarProduccion = async (req, res) => {
   try {
+    const { productoId, cantidadProducida } = req.body;
+
+    // Verifica si el producto existe
+    const producto = await Producto.findById(productoId);
+    if (!producto) {
+      return res.status(400).json({ error: `El producto con ID ${productoId} no existe` });
+    }
+
+    // Crea un nuevo registro de producción
     const nuevaProduccion = new Produccion({
-      productoProducido,
-      fechaProduccion,
+      producto: productoId,
       cantidadProducida,
     });
 
+    // Guarda la producción en la base de datos
     await nuevaProduccion.save();
 
-    res.status(201).json(nuevaProduccion);
+    // Actualiza la existencia del producto
+    producto.existencia += cantidadProducida;
+    await producto.save();
+
+    res.status(201).json({ mensaje: 'Producción registrada exitosamente' });
   } catch (error) {
-    res.status(500).json({ error: 'Error al crear una nueva producción' });
-    console.log(error)
+    console.error(error);
+    res.status(500).json({ error: 'Error al registrar la producción' });
   }
 };
 
-// Controlador para obtener todas las producciones
-const obtenerTodasLasProducciones = async (req, res) => {
+// Controlador para obtener todas las producciones registradas
+const obtenerProducciones = async (req, res) => {
   try {
-    const producciones = await Produccion.find().populate('productoProducido'); // Consultar todas las producciones y populando el producto asociado
+    const producciones = await Produccion.find().populate('producto');
 
-    res.status(200).json(producciones);
+    res.status(200).json({ producciones });
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener todas las producciones' });
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener las producciones' });
   }
 };
 
-module.exports = { crearProduccion, obtenerTodasLasProducciones };
+module.exports = { registrarProduccion, obtenerProducciones };
