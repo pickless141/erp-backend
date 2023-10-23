@@ -10,6 +10,7 @@ const produccionSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  fechaVencimiento: Date,
 });
 
 const Produccion = mongoose.model('Produccion', produccionSchema);
