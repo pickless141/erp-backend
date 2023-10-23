@@ -55,8 +55,7 @@ const editarClientePorId = async (req, res) => {
     const datosActualizados = req.body;
   
     try {
-      // Asegúrate de que el ID del cliente no cambie
-      delete datosActualizados._id; // Elimina el campo _id del cuerpo de la solicitud
+      delete datosActualizados._id; 
   
       const cliente = await Cliente.findOneAndUpdate({ _id: clienteId }, datosActualizados, {
         new: true,

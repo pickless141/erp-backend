@@ -8,6 +8,7 @@ const tiendaSchema = new mongoose.Schema({
   },
   nombreTienda: String,
   direccion: String,
+  descripcion: String,
 });
 
 const Tienda = mongoose.model('Tienda', tiendaSchema);
