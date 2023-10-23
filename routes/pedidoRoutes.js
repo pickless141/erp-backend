@@ -4,7 +4,7 @@ const pedidoController = require('../controllers/pedidoController/pedidoControll
 const pedidoRoutes = Router();
 
 // Ruta para crear un nuevo pedido
-pedidoRoutes.post('/', pedidoController.crearPedido);
+pedidoRoutes.post('/', pedidoController.crearPedidoEnTienda);
 pedidoRoutes.get('/', pedidoController.obtenerTodosLosPedidos);
 
 module.exports = pedidoRoutes;
