@@ -5,7 +5,6 @@ const Tienda = require('../../models/tienda/Tienda.js')
 // Controlador para crear una reposición de productos en una tienda
 const agregarReposicion = async (req, res) => {
   try {
-    // Obten los datos del cuerpo de la solicitud
     const { tiendaId, existenciaAnterior, existenciaActual } = req.body;
 
     // Verifica si la tienda existe
@@ -45,7 +44,7 @@ const obtenerTodasLasReposiciones = async (req, res) => {
 
 // Controlador para buscar una reposición por ID
 const buscarReposicionPorId = async (req, res) => {
-  const reposicionId = req.params.id; // Obtén el ID de la reposición desde los parámetros de la ruta
+  const reposicionId = req.params.id; 
 
   try {
     const reposicion = await Reposicion.findById(reposicionId)
@@ -64,7 +63,7 @@ const buscarReposicionPorId = async (req, res) => {
 };
 // Controlador para obtener todas las reposiciones de una tienda
 const obtenerReposicionesPorTienda = async (req, res) => {
-  const tiendaId = req.params.tiendaId; // Obten el ID de la tienda desde los parámetros de la ruta
+  const tiendaId = req.params.tiendaId; 
 
   try {
     const reposiciones = await Reposicion.find({ tienda: tiendaId });

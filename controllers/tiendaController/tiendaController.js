@@ -4,7 +4,7 @@ const Cliente = require('../../models/cliente/Cliente.js'); // Asegúrate de que
 // Controlador para crear una tienda y asignarle un cliente
 const crearTienda = async (req, res) => {
   try {
-    const { nombreCliente, nombreTienda, direccion } = req.body;
+    const { nombreCliente, nombreTienda, direccion, descripcion } = req.body;
 
     // Verifica si el cliente existe
     const clienteExistente = await Cliente.findById(nombreCliente);
@@ -17,6 +17,7 @@ const crearTienda = async (req, res) => {
       nombreCliente,
       nombreTienda,
       direccion,
+      descripcion
     });
 
     await nuevaTienda.save();
@@ -42,7 +43,7 @@ const obtenerTodasLasTiendas = async (req, res) => {
 
 //Controlador para traer todas las tiendas de un cliente
 const obtenerTiendasPorCliente = async (req, res) => {
-    const clienteId = req.params.clienteId; // Obtén el ID del cliente desde los parámetros de la URL
+    const clienteId = req.params.clienteId; 
   
     try {
       // Busca todas las tiendas relacionadas con el cliente por su ID
@@ -61,8 +62,8 @@ const obtenerTiendasPorCliente = async (req, res) => {
 
 //Controlador para actualizar informacion de la tienda
 const actualizarTienda = async (req, res) => {
-    const tiendaId = req.params.id; // Obtén el ID de la tienda desde los parámetros de la ruta
-    const { nombreTienda, direccion } = req.body; // Datos actualizados de la tienda
+    const tiendaId = req.params.id; 
+    const { nombreTienda, direccion } = req.body; 
   
     try {
       // Actualiza la tienda por su ID

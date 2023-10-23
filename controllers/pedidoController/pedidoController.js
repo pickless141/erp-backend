@@ -5,7 +5,6 @@ const Tienda = require('../../models/tienda/Tienda.js')
 
 const crearPedidoEnTienda = async (req, res) => {
   try {
-    // Obten los datos del cuerpo de la solicitud
     const { tiendaId, productos } = req.body;
 
     // Verifica si la tienda existe
@@ -52,8 +51,6 @@ const crearPedidoEnTienda = async (req, res) => {
       precioTotal,
       fechaPedido,
     });
-
-    // Guarda el pedido en la base de datos
     await nuevoPedido.save();
 
     res.status(201).json({ mensaje: 'Pedido creado exitosamente', pedido: nuevoPedido });
