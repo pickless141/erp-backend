@@ -22,7 +22,7 @@ const iniciarSesion = async (req, res) => {
     }
 
     // Crear un token JWT
-    const token = jwt.sign({ userId: usuario._id }, jwtSecret, {
+    const token = jwt.sign({ userId: usuario._id, roles: usuario.roles }, jwtSecret, {
       expiresIn: '1h', 
     });
 

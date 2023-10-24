@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 
 // Controlador para crear un nuevo usuario
 const crearUsuario = async (req, res) => {
-  const { nombre, apellido, email, password } = req.body;
+  const { nombre, apellido, email, password, roles } = req.body;
 
   try {
     // Verificar si el usuario ya existe
@@ -16,12 +16,13 @@ const crearUsuario = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Crear un nuevo usuario
+    // Crear un nuevo usuario con el rol especificado
     const nuevoUsuario = new Usuario({
       nombre,
       apellido,
       email,
       password: hashedPassword,
+      roles, 
     });
 
     // Guardar el usuario en la base de datos

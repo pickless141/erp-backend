@@ -20,7 +20,12 @@ const userSchema = new Schema({
         type: String,
         unique: true,
         trim: true
-    }
+    },
+    roles: [
+        "admin",
+        "vendedor",
+        "repositor"
+    ]
 });
 
 module.exports = mongoose.model('Usuarios', userSchema)
