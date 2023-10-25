@@ -6,13 +6,15 @@ const mainRoutes = require('./routes/indexRoutes')
 // Crear el servidor
 const app = express();
 
+const allowedOrigin = process.env.FRONTEND_URL
+
 // Habilitar bodyparser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(
     cors({
-      origin: 'http://localhost:3000',
+      origin: allowedOrigin,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       credentials: true, // Habilita las cookies y encabezados de autenticación
     })
