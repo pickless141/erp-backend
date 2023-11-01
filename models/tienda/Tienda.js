@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
-//modelo para registrar tiendas
 const tiendaSchema = new mongoose.Schema({
-  nombreCliente: {
+  cliente: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Cliente',
+    ref: 'Cliente', // Referencia al modelo Cliente
   },
+  nombreCliente: String, 
   nombreTienda: String,
   direccion: String,
   descripcion: String,

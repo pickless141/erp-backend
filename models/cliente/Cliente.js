@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
 
 const clienteSchema = new mongoose.Schema({
-  nombre: String, // Nombre en caso de persona física
-  empresa: String, // Empresa en caso de que sea una empresa
+  nombre: String, 
   email: {
     type: String,
     unique: true,

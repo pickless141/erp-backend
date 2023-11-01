@@ -22,11 +22,11 @@ const iniciarSesion = async (req, res) => {
     }
 
     // Crear un token JWT
-    const token = jwt.sign({ userId: usuario._id, roles: usuario.roles }, jwtSecret, {
+    const token = jwt.sign({ userId: usuario._id, roles: usuario.roles, nombre: usuario.nombre, apellido: usuario.apellido}, jwtSecret, {
       expiresIn: '1h', 
     });
 
-    res.status(200).json({ token });
+    res.status(200).json({ token, nombre: usuario.nombre, apellido: usuario.apellido });
   } catch (error) {
     res.status(500).json({ error: 'Error al iniciar sesión' });
   }
