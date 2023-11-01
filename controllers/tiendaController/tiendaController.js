@@ -6,18 +6,23 @@ const crearTienda = async (req, res) => {
   try {
     const { nombreCliente, nombreTienda, direccion, descripcion } = req.body;
 
-    // Verifica si el cliente existe
-    const clienteExistente = await Cliente.findById(nombreCliente);
+    // Verifica si el cliente existe por su nombre
+    let clienteExistente = await Cliente.findOne({ nombre: nombreCliente });
 
     if (!clienteExistente) {
-      return res.status(404).json({ error: 'El cliente no existe' });
+      // Si el cliente no existe, crea un nuevo cliente
+      clienteExistente = new Cliente({
+        nombre: nombreCliente,
+      });
+      await clienteExistente.save();
     }
 
     const nuevaTienda = new Tienda({
-      nombreCliente,
+      cliente: clienteExistente._id, // Almacena la referencia al cliente
+      nombreCliente: nombreCliente, // Almacena el nombre del cliente
       nombreTienda,
       direccion,
-      descripcion
+      descripcion,
     });
 
     await nuevaTienda.save();
