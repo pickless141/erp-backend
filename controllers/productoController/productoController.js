@@ -2,14 +2,16 @@ const Producto = require('../../models/producto/Producto.js');
 
 // Controlador para crear un nuevo producto
 const crearProducto = async (req, res) => {
-  const { nombre, existencia, precio } = req.body;
+  const { nombreProducto, precio } = req.body;
 
   try {
     const nuevoProducto = new Producto({
-      nombre,
-      existencia,
+      nombreProducto,
       precio,
     });
+
+    // Establece la existencia en cero por defecto
+    nuevoProducto.existencia = 0;
 
     await nuevoProducto.save();
 
@@ -33,12 +35,12 @@ const obtenerTodosLosProductos = async (req, res) => {
 // Controlador para actualizar un producto por su ID
 const actualizarProductoPorId = async (req, res) => {
   const productoId = req.params.id;
-  const { nombre,existencia, precio } = req.body;
+  const { nombreProducto, existencia, precio } = req.body;
 
   try {
     const producto = await Producto.findOneAndUpdate(
       { _id: productoId },
-      { nombre, existencia, precio },
+      { nombreProducto, existencia, precio },
       { new: true }
     );
 
