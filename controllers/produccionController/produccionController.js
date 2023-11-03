@@ -3,33 +3,33 @@ const Producto = require('../../models/producto/Producto.js');
 
 // Controlador para registrar una producción
 const registrarProduccion = async (req, res) => {
+  const { nombreProducto, cantidadProducida, fechaVencimiento } = req.body;
+
   try {
-    const { productoId, cantidadProducida, fechaVencimiento } = req.body;
+    // Busca el producto por su nombre en el modelo de Producto
+    const productoExistente = await Producto.findOne({ nombreProducto });
 
-    // Verifica si el producto existe
-    const producto = await Producto.findById(productoId);
-    if (!producto) {
-      return res.status(400).json({ error: `El producto con ID ${productoId} no existe` });
+    if (productoExistente) {
+      // Registra la producción en el modelo de Produccion
+      const produccion = new Produccion({
+        producto: productoExistente._id,
+        cantidadProducida,
+        fechaVencimiento,
+      });
+      await produccion.save();
+
+      // Actualiza la existencia del producto
+      await Producto.findOneAndUpdate(
+        { _id: productoExistente._id },
+        { $inc: { existencia: cantidadProducida } }
+      );
+
+      return res.status(201).json({ mensaje: 'Producción registrada exitosamente', produccion });
+    } else {
+      return res.status(404).json({ error: 'Producto no encontrado' });
     }
-
-    // Crea un nuevo registro de producción
-    const nuevaProduccion = new Produccion({
-      producto: productoId,
-      cantidadProducida,
-      fechaVencimiento, 
-    });
-
-    // Guarda la producción en la base de datos
-    await nuevaProduccion.save();
-
-    // Actualiza la existencia del producto
-    producto.existencia += cantidadProducida;
-    await producto.save();
-
-    res.status(201).json({ mensaje: 'Producción registrada exitosamente' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error al registrar la producción' });
+    return res.status(500).json({ error: 'Error al registrar la producción' });
   }
 };
 
