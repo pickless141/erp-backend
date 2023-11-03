@@ -4,7 +4,8 @@ const pedidoController = require('../controllers/pedidoController/pedidoControll
 const pedidoRoutes = Router();
 
 // Ruta para crear un nuevo pedido
-pedidoRoutes.post('/', pedidoController.crearPedidoEnTienda);
+pedidoRoutes.post('/', pedidoController.nuevoPedido);
 pedidoRoutes.get('/', pedidoController.obtenerTodosLosPedidos);
+pedidoRoutes.put('/:pedidoId/cambiarEstado', pedidoController.cambiarEstadoPedido);
 
 module.exports = pedidoRoutes;

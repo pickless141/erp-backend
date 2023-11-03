@@ -5,16 +5,19 @@ const pedidoSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Tienda',
   },
-  productos: [
-    {
-      producto: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Producto',
-      },
-      cantidad: Number,
-    },
-  ],
-  precioTotal: Number,
+  pedido: {
+    type: Array,
+    required: true
+  },
+  total: {
+    type: Number,
+    required: true
+  },
+  estado: {
+    type: String,
+    default: "PENDIENTE",
+    enum: ['PENDIENTE', 'COMPLETADO', 'CANCELADO'],
+  },
   fechaPedido: {
     type: Date,
     default: Date.now,

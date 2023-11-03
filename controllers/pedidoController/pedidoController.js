@@ -3,67 +3,54 @@ const Producto = require('../../models/producto/Producto.js');
 const Tienda = require('../../models/tienda/Tienda.js')
 
 
-const crearPedidoEnTienda = async (req, res) => {
-  try {
-    const { tiendaId, productos } = req.body;
+const nuevoPedido = async (req, res) => {
+  const { tienda, pedido } = req.body;
 
-    // Verifica si la tienda existe
-    const tienda = await Tienda.findById(tiendaId);
-    if (!tienda) {
-      return res.status(404).json({ error: 'La tienda no existe' });
+  try {
+    const tiendaEncontrada = await Tienda.findOne({ nombreTienda: tienda });
+
+    if (!tiendaEncontrada) {
+      return res.status(400).json({ error: 'Esa tienda no existe' });
     }
 
-    // Inicializa el precio total en 0
-    let precioTotal = 0;
+    let total = 0; 
 
-    // Verifica la existencia de los productos y calcula el precio total
-    for (const productoInfo of productos) {
-      const { productoId, cantidad } = productoInfo;
-      const producto = await Producto.findById(productoId);
+    const pedidoConInfoProducto = []; 
 
-      if (!producto) {
-        return res.status(400).json({ error: `El producto con ID ${productoId} no existe` });
-      }
+    // Verificar el stock para cada producto en el pedido y calcular el total
+    for (const articulo of pedido) {
+      const { id, cantidad } = articulo;
+
+      const producto = await Producto.findById(id);
 
       if (cantidad > producto.existencia) {
-        return res.status(400).json({
-          error: `No hay suficiente existencia del producto: ${producto.nombre}`,
-        });
+        return res.status(400).json({ error: `El artículo: ${producto.nombre} excede la cantidad disponible` });
+      } else {
+        await producto.save();
+
+        // Calcula el costo de este artículo y agrégalo al total
+        total += producto.precio * cantidad;
+
+        pedidoConInfoProducto.push({ producto, cantidad });
       }
-
-      // Suma el precio del producto al precio total
-      precioTotal += producto.precio * cantidad;
-
-      // Resta la cantidad del producto a la existencia
-      producto.existencia -= cantidad;
-
-      // Guarda el producto actualizado en la base de datos
-      await producto.save();
     }
 
-    // Calcula la fecha actual
-    const fechaPedido = new Date();
+    // Crear un nuevo pedido utilizando el ID de la tienda encontrada
+    const nuevoPedido = new Pedido({ tienda: tiendaEncontrada._id, pedido: pedidoConInfoProducto, total });
 
-    // Crea el pedido
-    const nuevoPedido = new Pedido({
-      tienda: tiendaId,
-      productos,
-      precioTotal,
-      fechaPedido,
-    });
-    await nuevoPedido.save();
-
-    res.status(201).json({ mensaje: 'Pedido creado exitosamente', pedido: nuevoPedido });
+    // Guardar el pedido en la base de datos
+    const resultado = await nuevoPedido.save();
+    return res.status(201).json({ mensaje: 'Pedido creado exitosamente', pedido: resultado });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al crear un nuevo pedido en la tienda' });
+    return res.status(500).json({ error: 'Error al crear un nuevo pedido' });
   }
-}
+};
 
 // Controlador para obtener todos los pedidos
 const obtenerTodosLosPedidos = async (req, res) => {
   try {
-    const pedidos = await Pedido.find().populate('tienda productos.producto');
+    const pedidos = await Pedido.find().populate('tienda'); 
 
     res.status(200).json({ pedidos });
   } catch (error) {
@@ -71,5 +58,41 @@ const obtenerTodosLosPedidos = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener los pedidos' });
   }
 };
+
+
+//Actualizar el estado del pedido para restar la existencia una vez que se complete el pedido
+const cambiarEstadoPedido = async (req, res) => {
+  const { pedidoId, nuevoEstado } = req.body;
+
+  try {
+    const pedido = await Pedido.findById(pedidoId);
+
+    if (!pedido) {
+      return res.status(400).json({ error: 'Pedido no encontrado' });
+    }
+
+    // Verifica si el nuevo estado es diferente al estado actual
+    if (nuevoEstado === 'COMPLETADO' && pedido.estado !== 'COMPLETADO') {
+      // Aquí puedes implementar la lógica para restar existencia en productos
+      for (const articulo of pedido.pedido) {
+        const { producto, cantidad } = articulo;
+        // Realiza la resta de existencia en el modelo de Producto
+        const productoActualizado = await Producto.findByIdAndUpdate(
+          producto,
+          { $inc: { existencia: -cantidad } }
+        );
+      }
+    }
+
+    // Actualiza el estado del pedido
+    pedido.estado = nuevoEstado;
+    await pedido.save();
+
+    return res.status(200).json({ mensaje: 'Estado del pedido actualizado exitosamente' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error al cambiar el estado del pedido' });
+  }
+};
   
-module.exports = { crearPedidoEnTienda, obtenerTodosLosPedidos };
+module.exports = { nuevoPedido, obtenerTodosLosPedidos, cambiarEstadoPedido };
