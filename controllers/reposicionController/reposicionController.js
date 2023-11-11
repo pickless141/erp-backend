@@ -1,5 +1,4 @@
 const Reposicion = require('../../models/reposicion/Reposicion.js');
-const Producto = require('../../models/producto/Producto.js');
 const Tienda = require('../../models/tienda/Tienda.js')
 
 // Controlador para crear una reposición de productos en una tienda
