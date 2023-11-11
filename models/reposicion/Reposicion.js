@@ -5,24 +5,14 @@ const reposicionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Tienda',
   },
-  existenciaAnterior: [
-    {
-      producto: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Producto',
-      },
-      cantidad: Number,
-    },
-  ],
-  existenciaActual: [
-    {
-      producto: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Producto',
-      },
-      cantidad: Number,
-    },
-  ],
+  existenciaAnterior: {
+    type: Array,
+    required: true
+  },
+  existenciaActual: {
+    type: Array,
+    required: true
+  },
   fechaReposicion: {
     type: Date,
     default: Date.now,

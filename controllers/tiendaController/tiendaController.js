@@ -46,23 +46,22 @@ const obtenerTodasLasTiendas = async (req, res) => {
     }
 };
 
-//Controlador para traer todas las tiendas de un cliente
+// Controlador para traer todas las tiendas de un cliente
 const obtenerTiendasPorCliente = async (req, res) => {
-    const clienteId = req.params.clienteId; 
-  
-    try {
+  const clienteId = req.params.clienteId;
+  try {
       // Busca todas las tiendas relacionadas con el cliente por su ID
-      const tiendas = await Tienda.find({ nombreCliente: clienteId });
-  
+      const tiendas = await Tienda.find({ cliente: clienteId });
+      
       if (tiendas.length === 0) {
-        return res.status(404).json({ mensaje: 'No se encontraron tiendas para este cliente.' });
+          return res.status(404).json({ mensaje: 'No se encontraron tiendas para este cliente.' });
       }
-  
+
       res.status(200).json(tiendas);
-    } catch (error) {
+  } catch (error) {
       console.log(error);
       res.status(500).json({ error: 'Error al buscar tiendas por cliente.' });
-    }
+  }
 };
 
 //Controlador para actualizar informacion de la tienda

@@ -7,7 +7,7 @@ const nuevoPedido = async (req, res) => {
   const { tienda, pedido } = req.body;
 
   try {
-    const tiendaEncontrada = await Tienda.findOne({ nombreTienda: tienda });
+    const tiendaEncontrada = await Tienda.findById(tienda);
 
     if (!tiendaEncontrada) {
       return res.status(400).json({ error: 'Esa tienda no existe' });
