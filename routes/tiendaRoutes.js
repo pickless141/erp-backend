@@ -8,6 +8,9 @@ tiendaRoutes.post('/', tiendaController.crearTienda);
 //Ruta para obtener todas las tiendas registradas 
 tiendaRoutes.get('/', tiendaController.obtenerTodasLasTiendas);
 
+//Ruta para obtener una tienda
+tiendaRoutes.get('/tienda/:id', tiendaController.obtenerTienda);
+
 // Ruta para obtener todas las tiendas de un cliente por su ID
 tiendaRoutes.get('/:clienteId/tiendas', tiendaController.obtenerTiendasPorCliente);
 
