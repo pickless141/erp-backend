@@ -34,16 +34,43 @@ const crearTienda = async (req, res) => {
   }
 };
 
-//Controlador para traer todas las tiendas
+// Controlador para traer todas las tiendas con paginación y búsqueda opcional
 const obtenerTodasLasTiendas = async (req, res) => {
-    try {
-      const tiendas = await Tienda.find(); // Busca todas las tiendas
-  
-      res.status(200).json(tiendas); // Envía la lista de tiendas como respuesta
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al obtener las tiendas' });
+  try {
+    const { page = 1, search = '' } = req.query;
+    const limit = 5;
+    const skip = (page - 1) * limit;
+
+    // Aplicar búsqueda si se proporciona un término de búsqueda
+    const filtro = search
+      ? { $or: [{ nombreTienda: { $regex: search, $options: 'i' } }] }
+      : {};
+
+    const tiendas = await Tienda.find(filtro).skip(skip).limit(limit);
+
+    const totalDocs = await Tienda.countDocuments(filtro);
+
+    res.status(200).json({ docs: tiendas, totalDocs, limit });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener todas las tiendas' });
+  }
+};
+// Controlador para obtener una tienda por su ID
+const obtenerTienda = async (req, res) => {
+  const tiendaId = req.params.id;
+  try {
+    const tienda = await Tienda.findById(tiendaId);
+
+    if (!tienda) {
+      return res.status(404).json({ mensaje: 'No se encontró la tienda.' });
     }
+
+    res.status(200).json(tienda);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener la tienda' });
+  } 
 };
 
 // Controlador para traer todas las tiendas de un cliente
@@ -64,28 +91,24 @@ const obtenerTiendasPorCliente = async (req, res) => {
   }
 };
 
-//Controlador para actualizar informacion de la tienda
+// Controlador para actualizar información de la tienda
 const actualizarTienda = async (req, res) => {
-    const tiendaId = req.params.id; 
-    const { nombreTienda, direccion } = req.body; 
-  
-    try {
-      // Actualiza la tienda por su ID
-      const tiendaActualizada = await Tienda.findByIdAndUpdate(
-        tiendaId,
-        { nombreTienda, direccion },
-        { new: true } // Devuelve la tienda actualizada en la respuesta
-      );
-  
-      if (!tiendaActualizada) {
-        return res.status(404).json({ error: 'Tienda no encontrada' });
-      }
-  
-      res.status(200).json({mensaje: "Tienda Actualizada con exito!", tienda: tiendaActualizada});
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al actualizar la tienda' });
+  const tiendaId = req.params.id;
+  const datosActualizados = req.body;
+
+  try {
+    const tienda = await Tienda.findByIdAndUpdate(tiendaId, datosActualizados, {
+      new: true,
+    });
+
+    if (!tienda) {
+      return res.status(404).json({ error: 'La tienda no existe' });
     }
+
+    res.status(200).json(tienda);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar la tienda' });
+  }
 };
 
-module.exports = { crearTienda, obtenerTodasLasTiendas, obtenerTiendasPorCliente, actualizarTienda };
+module.exports = { crearTienda, obtenerTodasLasTiendas, obtenerTienda, obtenerTiendasPorCliente, actualizarTienda };

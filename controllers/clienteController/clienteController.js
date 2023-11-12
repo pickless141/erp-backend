@@ -21,14 +21,25 @@ const crearCliente = async (req, res) => {
   }
 };
 
-// Controlador para obtener todos los clientes
+// Controlador para obtener todos los clientes con paginación y búsqueda opcional
 const obtenerTodosLosClientes = async (req, res) => {
-    try {
-      const clientes = await Cliente.find();
-      res.status(200).json(clientes);
-    } catch (error) {
-      res.status(500).json({ error: 'Error al obtener todos los clientes' });
-    }
+  try {
+    const { page = 1, search = '' } = req.query;
+    const limit = 5;
+    const skip = (page - 1) * limit;
+
+    // Aplicar búsqueda si se proporciona un término de búsqueda
+    const filtro = search
+      ? { $or: [{ nombre: { $regex: search, $options: 'i' } }] }
+      : {};
+
+    const clientes = await Cliente.find(filtro).skip(skip).limit(limit);
+    const totalDocs = await Cliente.countDocuments(filtro);
+
+    res.status(200).json({ docs: clientes, totalDocs, limit });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener todos los clientes' });
+  }
 };
 
 // Controlador para obtener un cliente por su ID
@@ -87,4 +98,4 @@ const borrarClientePorId = async (req, res) => {
     }
 };
 
-module.exports = { crearCliente, obtenerTodosLosClientes, obtenerClientePorId, editarClientePorId, borrarClientePorId };
+module.exports = { crearCliente, obtenerTodosLosClientes, obtenerClientePorId,editarClientePorId, borrarClientePorId };
