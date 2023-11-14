@@ -73,7 +73,6 @@ const cambiarEstadoPedido = async (req, res) => {
 
     // Verifica si el nuevo estado es diferente al estado actual
     if (nuevoEstado === 'COMPLETADO' && pedido.estado !== 'COMPLETADO') {
-      // Aquí puedes implementar la lógica para restar existencia en productos
       for (const articulo of pedido.pedido) {
         const { producto, cantidad } = articulo;
         // Realiza la resta de existencia en el modelo de Producto
