@@ -6,7 +6,7 @@ const agregarReposicion = async (req, res) => {
   try {
     const { tiendaId, existenciaAnterior, existenciaActual } = req.body;
 
-    // Verifica si la tienda existe
+    // Verifica si la tienda existe y obtén la información completa de la tienda
     const tienda = await Tienda.findById(tiendaId);
     if (!tienda) {
       return res.status(404).json({ error: 'La tienda no existe' });
@@ -14,7 +14,14 @@ const agregarReposicion = async (req, res) => {
 
     // Crea la reposición de productos
     const nuevaReposicion = new Reposicion({
-      tienda: tiendaId,
+      tienda: {
+        _id: tienda._id,
+        cliente: tienda.cliente,
+        nombreCliente: tienda.nombreCliente,
+        nombreTienda: tienda.nombreTienda,
+        direccion: tienda.direccion,
+        descripcion: tienda.descripcion,
+      },
       existenciaAnterior,
       existenciaActual,
     });
@@ -28,11 +35,10 @@ const agregarReposicion = async (req, res) => {
     res.status(500).json({ error: 'Error al crear una nueva reposición en la tienda' });
   }
 };
-
 // Controlador para obtener todas las reposiciones
 const obtenerTodasLasReposiciones = async (req, res) => {
   try {
-    const reposiciones = await Reposicion.find();
+    const reposiciones = await Reposicion.find().populate('tienda');
 
     res.status(200).json(reposiciones);
   } catch (error) {
