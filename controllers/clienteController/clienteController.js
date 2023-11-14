@@ -58,6 +58,16 @@ const obtenerClientePorId = async (req, res) => {
       res.status(500).json({ error: 'Error al obtener el cliente por ID' });
     }
 };
+//Controlador para obtener todos los clientes
+const clienteSelect = async (req, res) => {
+  try {
+    const clientes = await Cliente.find();
+    res.status(200).json(clientes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener todos los clientes' });
+  }
+};
 
 // Controlador para editar un cliente por su ID
 const editarClientePorId = async (req, res) => {
@@ -98,4 +108,4 @@ const borrarClientePorId = async (req, res) => {
     }
 };
 
-module.exports = { crearCliente, obtenerTodosLosClientes, obtenerClientePorId,editarClientePorId, borrarClientePorId };
+module.exports = { crearCliente, obtenerTodosLosClientes, obtenerClientePorId, clienteSelect, editarClientePorId, borrarClientePorId };

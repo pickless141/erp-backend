@@ -46,9 +46,18 @@ const obtenerTodasLasTiendas = async (req, res) => {
       ? { $or: [{ nombreTienda: { $regex: search, $options: 'i' } }] }
       : {};
 
-    const tiendas = await Tienda.find(filtro).skip(skip).limit(limit);
+    let tiendas;
+    let totalDocs;
 
-    const totalDocs = await Tienda.countDocuments(filtro);
+    if (page && limit) {
+      // Si se proporciona la paginación, aplicar skip y limit
+      tiendas = await Tienda.find(filtro).skip(skip).limit(limit);
+      totalDocs = await Tienda.countDocuments(filtro);
+    } else {
+      // Si no se proporciona la paginación, obtener todos los documentos
+      tiendas = await Tienda.find(filtro);
+      totalDocs = tiendas.length;
+    }
 
     res.status(200).json({ docs: tiendas, totalDocs, limit });
   } catch (error) {
@@ -90,7 +99,16 @@ const obtenerTiendasPorCliente = async (req, res) => {
       res.status(500).json({ error: 'Error al buscar tiendas por cliente.' });
   }
 };
-
+// Nuevo controlador para obtener todas las tiendas sin límites ni paginación
+const tiendaSelect = async (req, res) => {
+  try {
+    const tiendas = await Tienda.find();
+    res.status(200).json(tiendas);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener todas las tiendas' });
+  }
+};
 // Controlador para actualizar información de la tienda
 const actualizarTienda = async (req, res) => {
   const tiendaId = req.params.id;
@@ -111,4 +129,4 @@ const actualizarTienda = async (req, res) => {
   }
 };
 
-module.exports = { crearTienda, obtenerTodasLasTiendas, obtenerTienda, obtenerTiendasPorCliente, actualizarTienda };
+module.exports = { crearTienda, obtenerTodasLasTiendas, obtenerTienda, obtenerTiendasPorCliente, tiendaSelect,actualizarTienda };
