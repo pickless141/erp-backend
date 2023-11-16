@@ -4,7 +4,7 @@ const Tienda = require('../../models/tienda/Tienda.js')
 // Controlador para crear una reposición de productos en una tienda
 const agregarReposicion = async (req, res) => {
   try {
-    const { tiendaId, existenciaAnterior, existenciaActual } = req.body;
+    const { tiendaId, existenciaAnterior, existenciaActual, numeroLote } = req.body;
 
     // Verifica si la tienda existe y obtén la información completa de la tienda
     const tienda = await Tienda.findById(tiendaId);
@@ -14,16 +14,10 @@ const agregarReposicion = async (req, res) => {
 
     // Crea la reposición de productos
     const nuevaReposicion = new Reposicion({
-      tienda: {
-        _id: tienda._id,
-        cliente: tienda.cliente,
-        nombreCliente: tienda.nombreCliente,
-        nombreTienda: tienda.nombreTienda,
-        direccion: tienda.direccion,
-        descripcion: tienda.descripcion,
-      },
+      tienda: tiendaId,
       existenciaAnterior,
       existenciaActual,
+      numeroLote
     });
 
     // Guarda la reposición en la base de datos

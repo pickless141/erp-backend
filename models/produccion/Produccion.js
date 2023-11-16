@@ -5,12 +5,13 @@ const produccionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Producto',
   },
+  numeroLote: Number,
   cantidadProducida: Number,
+  fechaVencimiento: Date,
   fechaProduccion: {
     type: Date,
     default: Date.now,
   },
-  fechaVencimiento: Date,
 });
 
 const Produccion = mongoose.model('Produccion', produccionSchema);
