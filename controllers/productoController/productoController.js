@@ -2,12 +2,13 @@ const Producto = require('../../models/producto/Producto.js');
 
 // Controlador para crear un nuevo producto
 const crearProducto = async (req, res) => {
-  const { nombreProducto, precio } = req.body;
+  const { nombreProducto, precio, lote } = req.body;
 
   try {
     const nuevoProducto = new Producto({
       nombreProducto,
       precio,
+      lote
     });
 
     // Establece la existencia en cero por defecto

@@ -3,7 +3,7 @@ const Producto = require('../../models/producto/Producto.js');
 
 // Controlador para registrar una producción
 const registrarProduccion = async (req, res) => {
-  const { nombreProducto, cantidadProducida, fechaVencimiento } = req.body;
+  const { nombreProducto, cantidadProducida, numeroLote,fechaVencimiento } = req.body;
 
   try {
     // Busca el producto por su nombre en el modelo de Producto
@@ -14,6 +14,7 @@ const registrarProduccion = async (req, res) => {
       const produccion = new Produccion({
         producto: productoExistente._id,
         cantidadProducida,
+        numeroLote,
         fechaVencimiento,
       });
       await produccion.save();
