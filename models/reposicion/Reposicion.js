@@ -13,9 +13,6 @@ const reposicionSchema = new mongoose.Schema({
     type: Array,
     required: true
   },
-  numeroLote: {
-    type: Array,
-  },
   fechaReposicion: {
     type: Date,
     default: Date.now,
