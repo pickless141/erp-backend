@@ -54,7 +54,6 @@ const obtenerTodasLasTiendas = async (req, res) => {
       tiendas = await Tienda.find(filtro).skip(skip).limit(limit);
       totalDocs = await Tienda.countDocuments(filtro);
     } else {
-      // Si no se proporciona la paginación, obtener todos los documentos
       tiendas = await Tienda.find(filtro);
       totalDocs = tiendas.length;
     }
