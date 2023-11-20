@@ -27,12 +27,42 @@ const agregarReposicion = async (req, res) => {
     res.status(500).json({ error: 'Error al crear una nueva reposición en la tienda' });
   }
 };
-// Controlador para obtener todas las reposiciones
 const obtenerTodasLasReposiciones = async (req, res) => {
   try {
-    const reposiciones = await Reposicion.find().populate('tienda');
+    const { page = 1, search = '' } = req.query;
+    const limit = 5;
+    const skip = (page - 1) * limit;
 
-    res.status(200).json(reposiciones);
+    // Agrega console.log para imprimir más información
+    console.log('Página:', page);
+    console.log('Skip:', skip);
+    
+    const filtro = search
+      ? { 'tienda.nombreTienda': { $regex: search, $options: 'i' } }
+      : {};
+
+    console.log('Filtro:', filtro);
+
+    let reposiciones;
+    let totalDocs;
+
+    if (page && limit) {
+      // Agrega console.log para imprimir la consulta a la base de datos
+      console.log('Consulta a la base de datos:');
+      console.log(Reposicion.find(filtro).skip(skip).limit(limit).populate('tienda').toString());
+
+      reposiciones = await Reposicion.find(filtro)
+        .skip(skip)
+        .limit(limit)
+        .populate('tienda');
+
+      totalDocs = await Reposicion.countDocuments(filtro);
+    } else {
+      reposiciones = await Reposicion.find(filtro).populate('tienda');
+      totalDocs = reposiciones.length;
+    }
+
+    res.status(200).json({ docs: reposiciones, totalDocs, limit });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener las reposiciones' });
