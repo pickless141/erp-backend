@@ -28,7 +28,6 @@ const obtenerTodosLosClientes = async (req, res) => {
     const limit = 5;
     const skip = (page - 1) * limit;
 
-    // Aplicar búsqueda si se proporciona un término de búsqueda
     const filtro = search
       ? { $or: [{ nombre: { $regex: search, $options: 'i' } }] }
       : {};

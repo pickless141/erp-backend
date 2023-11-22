@@ -6,11 +6,9 @@ const registrarProduccion = async (req, res) => {
   const { nombreProducto, cantidadProducida, numeroLote,fechaVencimiento } = req.body;
 
   try {
-    // Busca el producto por su nombre en el modelo de Producto
     const productoExistente = await Producto.findOne({ nombreProducto });
 
     if (productoExistente) {
-      // Registra la producción en el modelo de Produccion
       const produccion = new Produccion({
         producto: productoExistente._id,
         cantidadProducida,
@@ -19,7 +17,6 @@ const registrarProduccion = async (req, res) => {
       });
       await produccion.save();
 
-      // Actualiza la existencia del producto
       await Producto.findOneAndUpdate(
         { _id: productoExistente._id },
         { $inc: { existencia: cantidadProducida } }

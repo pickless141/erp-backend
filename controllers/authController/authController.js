@@ -1,4 +1,4 @@
-const Usuario = require('../../models/user/User.js'); // Asegúrate de importar tu modelo de usuario
+const Usuario = require('../../models/user/User.js'); 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -9,19 +9,16 @@ const iniciarSesion = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Verificar si el usuario existe
     const usuario = await Usuario.findOne({ email });
     if (!usuario) {
       return res.status(401).json({ error: 'El Email no es válido' });
     }
 
-    // Verificar la contraseña
     const contrasenaValida = await bcrypt.compare(password, usuario.password);
     if (!contrasenaValida) {
       return res.status(401).json({ error: 'Contraseña incorrecta' });
     }
-
-    // Crear un token JWT
+    
     const token = jwt.sign({ userId: usuario._id, roles: usuario.roles, nombre: usuario.nombre, apellido: usuario.apellido}, jwtSecret, {
       expiresIn: '1h', 
     });
