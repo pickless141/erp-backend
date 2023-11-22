@@ -1,16 +1,15 @@
-const Tienda = require('../../models/tienda/Tienda.js'); // Asegúrate de que la ruta del modelo sea correcta
-const Cliente = require('../../models/cliente/Cliente.js'); // Asegúrate de que la ruta del modelo sea correcta
+const Tienda = require('../../models/tienda/Tienda.js'); 
+const Cliente = require('../../models/cliente/Cliente.js'); 
 
 // Controlador para crear una tienda y asignarle un cliente
 const crearTienda = async (req, res) => {
   try {
     const { nombreCliente, nombreTienda, direccion, descripcion } = req.body;
 
-    // Verifica si el cliente existe por su nombre
+    
     let clienteExistente = await Cliente.findOne({ nombre: nombreCliente });
 
     if (!clienteExistente) {
-      // Si el cliente no existe, crea un nuevo cliente
       clienteExistente = new Cliente({
         nombre: nombreCliente,
       });
@@ -18,8 +17,8 @@ const crearTienda = async (req, res) => {
     }
 
     const nuevaTienda = new Tienda({
-      cliente: clienteExistente._id, // Almacena la referencia al cliente
-      nombreCliente: nombreCliente, // Almacena el nombre del cliente
+      cliente: clienteExistente._id, 
+      nombreCliente: nombreCliente, 
       nombreTienda,
       direccion,
       descripcion,
@@ -41,7 +40,6 @@ const obtenerTodasLasTiendas = async (req, res) => {
     const limit = 5;
     const skip = (page - 1) * limit;
 
-    // Aplicar búsqueda si se proporciona un término de búsqueda
     const filtro = search
       ? { $or: [{ nombreTienda: { $regex: search, $options: 'i' } }] }
       : {};
@@ -50,7 +48,6 @@ const obtenerTodasLasTiendas = async (req, res) => {
     let totalDocs;
 
     if (page && limit) {
-      // Si se proporciona la paginación, aplicar skip y limit
       tiendas = await Tienda.find(filtro).skip(skip).limit(limit);
       totalDocs = await Tienda.countDocuments(filtro);
     } else {
@@ -85,7 +82,6 @@ const obtenerTienda = async (req, res) => {
 const obtenerTiendasPorCliente = async (req, res) => {
   const clienteId = req.params.clienteId;
   try {
-      // Busca todas las tiendas relacionadas con el cliente por su ID
       const tiendas = await Tienda.find({ cliente: clienteId });
       
       if (tiendas.length === 0) {
@@ -98,6 +94,7 @@ const obtenerTiendasPorCliente = async (req, res) => {
       res.status(500).json({ error: 'Error al buscar tiendas por cliente.' });
   }
 };
+
 // Nuevo controlador para obtener todas las tiendas sin límites ni paginación
 const tiendaSelect = async (req, res) => {
   try {
@@ -108,6 +105,7 @@ const tiendaSelect = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener todas las tiendas' });
   }
 };
+
 // Controlador para actualizar información de la tienda
 const actualizarTienda = async (req, res) => {
   const tiendaId = req.params.id;

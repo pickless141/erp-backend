@@ -10,8 +10,6 @@ const crearProducto = async (req, res) => {
       precio,
       lote
     });
-
-    // Establece la existencia en cero por defecto
     nuevoProducto.existencia = 0;
 
     await nuevoProducto.save();
@@ -25,7 +23,7 @@ const crearProducto = async (req, res) => {
 // Controlador para obtener todos los productos
 const obtenerTodosLosProductos = async (req, res) => {
   try {
-    const productos = await Producto.find(); // Consultar todos los productos
+    const productos = await Producto.find();
 
     res.status(200).json(productos);
   } catch (error) {

@@ -17,7 +17,6 @@ const nuevoPedido = async (req, res) => {
 
     const pedidoConInfoProducto = []; 
 
-    // Verificar el stock para cada producto en el pedido y calcular el total
     for (const articulo of pedido) {
       const { id, cantidad } = articulo;
 
@@ -28,17 +27,14 @@ const nuevoPedido = async (req, res) => {
       } else {
         await producto.save();
 
-        // Calcula el costo de este artículo y agrégalo al total
         total += producto.precio * cantidad;
 
         pedidoConInfoProducto.push({ producto, cantidad });
       }
     }
 
-    // Crear un nuevo pedido utilizando el ID de la tienda encontrada
     const nuevoPedido = new Pedido({ tienda: tiendaEncontrada._id, pedido: pedidoConInfoProducto, total });
 
-    // Guardar el pedido en la base de datos
     const resultado = await nuevoPedido.save();
     return res.status(201).json({ mensaje: 'Pedido creado exitosamente', pedido: resultado });
   } catch (error) {
@@ -71,11 +67,9 @@ const cambiarEstadoPedido = async (req, res) => {
       return res.status(400).json({ error: 'Pedido no encontrado' });
     }
 
-    // Verifica si el nuevo estado es diferente al estado actual
     if (nuevoEstado === 'COMPLETADO' && pedido.estado !== 'COMPLETADO') {
       for (const articulo of pedido.pedido) {
         const { producto, cantidad } = articulo;
-        // Realiza la resta de existencia en el modelo de Producto
         const productoActualizado = await Producto.findByIdAndUpdate(
           producto,
           { $inc: { existencia: -cantidad } }
@@ -93,5 +87,22 @@ const cambiarEstadoPedido = async (req, res) => {
     return res.status(500).json({ error: 'Error al cambiar el estado del pedido' });
   }
 };
+// Controlador para eliminar un pedido
+const eliminarPedido = async (req, res) => {
+  const { pedidoId } = req.params;
+
+  try {
+    const pedidoEliminado = await Pedido.findOneAndDelete({ _id: pedidoId });
+
+    if (!pedidoEliminado) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    return res.status(200).json({ mensaje: 'Pedido eliminado exitosamente' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error al eliminar el pedido' });
+  }
+};
   
-module.exports = { nuevoPedido, obtenerTodosLosPedidos, cambiarEstadoPedido };
+module.exports = { nuevoPedido, obtenerTodosLosPedidos, cambiarEstadoPedido, eliminarPedido };
