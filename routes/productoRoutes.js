@@ -5,6 +5,7 @@ const productoController = require('../controllers/productoController/productoCo
 // Ruta para crear un nuevo producto
 productoRoutes.post('/', productoController.crearProducto);
 productoRoutes.get('/', productoController.obtenerTodosLosProductos);
+productoRoutes.get('/:id', productoController.obtenerProductoPorId);
 productoRoutes.put('/:id', productoController.actualizarProductoPorId);
 
 module.exports = productoRoutes;
