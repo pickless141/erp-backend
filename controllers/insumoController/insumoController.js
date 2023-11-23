@@ -19,48 +19,62 @@ const crearProducto = async (req, res) => {
     }
 }
 //Controlador para obtener todos los productos
-const obtenerProductos = async (req, res) => {
+const obtenerInsumos = async (req, res) => {
     try {
-      const productos = await Insumo.find();
-      res.status(200).json(productos);
+      const insumos = await Insumo.find();
+      res.status(200).json(insumos);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: 'Error al obtener todos los productos' });
+      res.status(500).json({ error: 'Error al obtener todos los insumos' });
+    }
+  };
+const obtenerProductoPorId = async (req, res) => {
+    const insumoId = req.params.id;
+  
+    try {
+      const insumo = await Insumo.findById(insumoId);
+  
+      if (!insumo) {
+        return res.status(404).json({ error: 'El insumo no existe' });
+      }
+  
+      res.status(200).json(insumo);
+    } catch (error) {
+      res.status(500).json({ error: 'Error al obtener el insumo' });
     }
   };
 const actualizarProducto = async (req, res) => {
-    const { _id, peso, descripcion } = req.body;
+  const insumoId = req.params.id;  
+  const { producto, peso, descripcion } = req.body;
 
     try {
-      if (!_id || (!peso && !descripcion)) {
-        return res.status(400).json({ error: 'Se requiere el ID del insumo y al menos una propiedad para actualizar.' });
+      const productoExistente = await Insumo.findById(insumoId)
+      
+      
+      if (!productoExistente) {
+        return res.status(404).json({ error: 'El producto no existe' });
       }
-
-      const insumoExistente = await Insumo.findById(_id);
-      if (!insumoExistente) {
-        return res.status(404).json({ error: 'Insumo no encontrado.' });
+  
+      const insumo = await Insumo.findOneAndUpdate(
+        { _id: insumoId },
+        { producto, peso, descripcion },
+        { new: true }
+      );
+  
+      if (!insumo) {
+        return res.status(404).json({ error: 'El insumo no existe' });
       }
-
-      const propiedadesPermitidas = ['peso', 'descripcion'];
-
-      propiedadesPermitidas.forEach((propiedad) => {
-        if (req.body[propiedad] !== undefined) {
-          insumoExistente[propiedad] = req.body[propiedad];
-        }
-      });
-
-      await insumoExistente.save();
-
-      res.json({ mensaje: 'Insumo actualizado correctamente.' });
+  
+      res.status(200).json({ mensaje: 'Insumo actualizado exitosamente', producto });
     } catch (error) {
-      console.error('Error al actualizar el insumo:', error);
-      res.status(500).json({ error: 'Error interno del servidor.' });
+      res.status(500).json({ error: 'Error al actualizar el insumo' });
     }
   };
 
 
   module.exports = {
     crearProducto,
-    obtenerProductos,
+    obtenerInsumos,
+    obtenerProductoPorId,
     actualizarProducto
 }
