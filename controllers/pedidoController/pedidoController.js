@@ -43,12 +43,19 @@ const nuevoPedido = async (req, res) => {
   }
 };
 
-// Controlador para obtener todos los pedidos
 const obtenerTodosLosPedidos = async (req, res) => {
-  try {
-    const pedidos = await Pedido.find().populate('tienda'); 
+  const page = parseInt(req.query.page) || 1;
+  const perPage = parseInt(req.query.perPage) || 3;
 
-    res.status(200).json({ pedidos });
+  try {
+    const totalPedidos = await Pedido.countDocuments();
+    const pedidos = await Pedido.find()
+      .sort({fechaPedido: -1})
+      .skip((page - 1) * perPage)
+      .limit(perPage)
+      .populate('tienda');
+
+    res.status(200).json({ pedidos, totalPedidos });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener los pedidos' });
