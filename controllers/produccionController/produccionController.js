@@ -31,12 +31,19 @@ const registrarProduccion = async (req, res) => {
   }
 };
 
-// Controlador para obtener todas las producciones registradas
 const obtenerProducciones = async (req, res) => {
-  try {
-    const producciones = await Produccion.find().populate('producto');
+  const page = parseInt(req.query.page) || 1;
+  const perPage = parseInt(req.query.perPage) || 10;
 
-    res.status(200).json({ producciones });
+  try {
+    const totalProducciones = await Produccion.countDocuments();
+    const producciones = await Produccion.find()
+      .skip((page - 1) * perPage)
+      .limit(perPage)
+      .populate('producto')
+      .sort({ fechaProduccion: -1 }); 
+
+    res.status(200).json({ producciones, totalProducciones });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener las producciones' });
