@@ -20,15 +20,29 @@ const crearProducto = async (req, res) => {
 }
 //Controlador para obtener todos los productos
 const obtenerInsumos = async (req, res) => {
-    try {
-      const insumos = await Insumo.find();
-      res.status(200).json(insumos);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al obtener todos los insumos' });
-    }
-  };
-const obtenerProductoPorId = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const perPage = parseInt(req.query.perPage) || 10;
+    const search = req.query.search || '';
+
+    const filter = {
+      producto: { $regex: search, $options: 'i' },
+    };
+
+    const totalInsumos = await Insumo.countDocuments(filter);
+    const insumos = await Insumo.find(filter)
+      .skip((page - 1) * perPage)
+      .limit(perPage);
+
+    const response = { docs: insumos, totalDocs: totalInsumos, limit: perPage };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener los insumos' });
+  }
+};
+  const obtenerProductoPorId = async (req, res) => {
     const insumoId = req.params.id;
   
     try {
