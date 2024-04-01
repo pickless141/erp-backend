@@ -1,7 +1,7 @@
 require('dotenv').config();
 const PORT = process.env.PORT;
 const app = require('./app')
-const mongoose = require('./config/db');
+const mongoose = require('./src/config/db');
 
 // Puerto
 app.listen(PORT, "0.0.0.0", () => {
