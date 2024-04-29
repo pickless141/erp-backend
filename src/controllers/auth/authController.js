@@ -20,7 +20,7 @@ const iniciarSesion = async (req, res) => {
     }
     
     const token = jwt.sign({ userId: usuario._id, roles: usuario.roles, nombre: usuario.nombre, apellido: usuario.apellido}, jwtSecret, {
-      expiresIn: '1h', 
+      expiresIn: '6h', 
     });
     
 
