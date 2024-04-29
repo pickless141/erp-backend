@@ -1,11 +1,7 @@
 const mongoose = require('mongoose');
 
 const clienteSchema = new mongoose.Schema({
-  nombre: String, 
-  email: {
-    type: String,
-    unique: true,
-  },
+  nombre: String,
   ruc: {
     type: String,
     required: true,

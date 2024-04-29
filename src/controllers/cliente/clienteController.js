@@ -2,12 +2,11 @@ const Cliente = require('../../models/cliente/Cliente.js');
 
 // Controlador para crear un nuevo cliente y mostrar un mensaje de éxito
 const crearCliente = async (req, res) => {
-  const { nombre, email, ruc, telefono } = req.body;
+  const { nombre, ruc, telefono } = req.body;
 
   try {
     const nuevoCliente = new Cliente({
       nombre,
-      email,
       ruc,
       telefono,
     });
