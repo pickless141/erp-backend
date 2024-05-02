@@ -1,7 +1,6 @@
 //const crypto = require('crypto');
 const express = require('express');
 const cors = require('cors')
-const morgan = require('morgan');
 const mainRoutes = require('./src/routes/indexRoutes')
 
 // Crear el servidor
@@ -9,7 +8,6 @@ const app = express();
 
 const allowedOrigin = process.env.FRONTEND_URL
 
-app.use(morgan('dev'));
 
 // Habilitar bodyparser
 app.use(express.json());
