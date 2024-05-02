@@ -257,4 +257,4 @@ const eliminarPedido = async (req, res) => {
   }
 };
   
-module.exports = { nuevoPedido, obtenerTodosLosPedidos, cambiarEstadoPedido, eliminarPedido };
+module.exports = { nuevoPedido, pedidoVendedor,obtenerTodosLosPedidos, pedidoResumen, pedidosTienda, cambiarEstadoPedido, eliminarPedido };
