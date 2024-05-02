@@ -181,13 +181,17 @@ const tiendaDetalle = async (req, res) => {
 // Controlador para obtener todas las tiendas sin límites ni paginación
 const tiendaSelect = async (req, res) => {
   try {
-    const tiendas = await Tienda.find();
+    const tiendas = await Tienda.find()
+      .populate({
+        path: 'productos.producto',
+        select: 'nombreProducto precio'  
+      });
     res.status(200).json(tiendas);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener todas las tiendas' });
   }
-};
+}
 
 //Controlador para actualizar tiendas
 const actualizarTienda = async (req, res) => {
