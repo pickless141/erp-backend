@@ -34,6 +34,10 @@ const pedidoSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  usuario: { 
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Usuarios',
+  }
 });
 
 const Pedido = mongoose.model('Pedido', pedidoSchema);

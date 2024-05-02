@@ -1,12 +1,19 @@
 const {Router} = require('express');
-const pedidoController = require('../controllers/pedidos/pedidoController.js'); 
+const pedidoController = require('../controllers/pedidos/pedidoController.js');
+const checkRole = require('../middlewares/checkRole.js');
 
 const pedidoRoutes = Router();
 
-// Ruta para crear un nuevo pedido
-pedidoRoutes.post('/', pedidoController.nuevoPedido);
-pedidoRoutes.get('/', pedidoController.obtenerTodosLosPedidos);
-pedidoRoutes.put('/:pedidoId/cambiarEstado', pedidoController.cambiarEstadoPedido);
-pedidoRoutes.delete('/:pedidoId', pedidoController.eliminarPedido);
+pedidoRoutes.post('/', checkRole(['admin']), pedidoController.nuevoPedido);  
+pedidoRoutes.get('/', checkRole(['admin', 'vendedor']), pedidoController.obtenerTodosLosPedidos);
+
+pedidoRoutes.get('/tienda/:tiendaId', checkRole(['admin']), pedidoController.pedidosTienda);
+pedidoRoutes.get('/:id/resumenPedido', checkRole(['admin']), pedidoController.pedidoResumen);
+
+pedidoRoutes.put('/:pedidoId/cambiarEstado', checkRole(['admin']), pedidoController.cambiarEstadoPedido);
+
+pedidoRoutes.delete('/:pedidoId', checkRole(['admin']), pedidoController.eliminarPedido);
+
+pedidoRoutes.post('/vendedor', checkRole(['vendedor', 'admin']), pedidoController.pedidoVendedor);
 
 module.exports = pedidoRoutes;
