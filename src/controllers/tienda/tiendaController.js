@@ -119,17 +119,29 @@ const añadirProductos = async (req, res) => {
 // Controlador para traer todas las tiendas de un cliente
 const obtenerTiendasPorCliente = async (req, res) => {
   const clienteId = req.params.clienteId;
-  try {
-      const tiendas = await Tienda.find({ cliente: clienteId });
-      
-      if (tiendas.length === 0) {
-          return res.status(404).json({ mensaje: 'No se encontraron tiendas para este cliente.' });
-      }
+  const page = parseInt(req.query.page) || 1; 
+  const limit = parseInt(req.query.limit) || 10; 
+  const skip = (page - 1) * limit; 
 
-      res.status(200).json(tiendas);
+  try {
+    const totalDocs = await Tienda.countDocuments({ cliente: clienteId });
+
+    const tiendas = await Tienda.find({ cliente: clienteId })
+      .skip(skip)
+      .limit(limit);
+
+    if (tiendas.length === 0) {
+      return res.status(404).json({ mensaje: 'No se encontraron tiendas para este cliente.' });
+    }
+
+    res.status(200).json({
+      docs: tiendas,
+      totalDocs,
+      limit
+    });
   } catch (error) {
-      console.log(error);
-      res.status(500).json({ error: 'Error al buscar tiendas por cliente.' });
+    console.log(error);
+    res.status(500).json({ error: 'Error al buscar tiendas por cliente.' });
   }
 };
 

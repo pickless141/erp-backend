@@ -135,12 +135,29 @@ const obtenerDetallesProductos = async (req, res) => {
 
 // Controlador para obtener todas las reposiciones de una tienda
 const obtenerReposicionesPorTienda = async (req, res) => {
-  const tiendaId = req.params.tiendaId; 
+  const tiendaId = req.params.tiendaId;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
 
   try {
-    const reposiciones = await Reposicion.find({ tienda: tiendaId }).populate('usuario', 'nombre apellido email');
+    const filter = { tienda: tiendaId };
 
-    res.status(200).json(reposiciones);
+    const totalReposiciones = await Reposicion.countDocuments(filter);
+    const reposiciones = await Reposicion.find(filter)
+      .populate('usuario', 'nombre apellido email')
+      .skip(skip)
+      .limit(limit);
+
+    if (reposiciones.length === 0) {
+      return res.status(404).json({ mensaje: 'No se encontraron reposiciones para esta tienda.' });
+    }
+
+    res.status(200).json({
+      docs: reposiciones,
+      totalDocs: totalReposiciones,
+      limit: limit
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener las reposiciones de la tienda' });
