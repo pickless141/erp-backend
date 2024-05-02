@@ -20,7 +20,7 @@ mainRoutes.use('/producciones', checkRole(['admin']), produccionesRoutes)
 mainRoutes.use('/insumos', checkRole(['admin']), insumoRoutes)
 mainRoutes.use('/clientes', checkRole(['admin']) ,clienteRoutes)
 mainRoutes.use('/reposiciones', checkRole(['admin', 'repositor']), reposicionRoutes)
-mainRoutes.use('/pedidos', checkRole(['admin', 'vendedor']), pedidoRoutes)
+mainRoutes.use('/pedidos', pedidoRoutes)
 mainRoutes.use('/login', authRoutes)
 
 module.exports = mainRoutes
