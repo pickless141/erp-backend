@@ -150,31 +150,32 @@ const tiendaDetalle = async (req, res) => {
   const tiendaId = req.params.id;
 
   try {
-    const tienda = await Tienda.findById(tiendaId);
+      const tienda = await Tienda.findById(tiendaId).populate({
+          path: 'productos.producto',
+          select: '_id nombreProducto precio' 
+      });
 
-    if (!tienda) {
-      return res.status(404).json({ mensaje: 'No se encontró la tienda.' });
-    }
+      if (!tienda) {
+          return res.status(404).json({ mensaje: 'No se encontró la tienda.' });
+      }
 
-    const { nombreCliente, nombreTienda, direccion, descripcion, productos } = tienda;
+      const { nombreCliente, nombreTienda, direccion, descripcion, productos } = tienda;
 
-    if (productos && productos.length > 0) {
-      const productosConInfo = await Promise.all(productos.map(async (prod) => {
-        const producto = await Producto.findById(prod.producto);
-        return {
-          nombre: producto ? producto.nombreProducto : 'Producto no encontrado',
-          precio: prod.precio,
-        };
-      }));
+      if (productos && productos.length > 0) {
+          const productosConInfo = productos.map(prod => ({
+              _id: prod.producto._id,  
+              nombre: prod.producto.nombreProducto,
+              precio: prod.producto.precio
+          }));
 
-      res.status(200).json({ nombreCliente, nombreTienda, direccion, descripcion, productos: productosConInfo });
-    } else {
-      res.status(200).json({ nombreTienda, direccion, descripcion, mensaje: 'No tiene productos registrados' });
-    }
+          res.status(200).json({ nombreCliente, nombreTienda, direccion, descripcion, productos: productosConInfo });
+      } else {
+          res.status(200).json({ nombreTienda, direccion, descripcion, mensaje: 'No tiene productos registrados' });
+      }
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error al obtener los detalles de la tienda' })
+      console.error(error);
+      res.status(500).json({ error: 'Error al obtener los detalles de la tienda' });
   }
 }
 
