@@ -150,35 +150,34 @@ const tiendaDetalle = async (req, res) => {
   const tiendaId = req.params.id;
 
   try {
-      const tienda = await Tienda.findById(tiendaId).populate({
-          path: 'productos.producto',
-          select: '_id nombreProducto',
-          path: 'productos.precio' 
-      });
+    const tienda = await Tienda.findById(tiendaId).populate({
+      path: 'productos.producto', 
+      select: '_id nombreProducto'  
+    });
 
-      if (!tienda) {
-          return res.status(404).json({ mensaje: 'No se encontró la tienda.' });
-      }
+    if (!tienda) {
+      return res.status(404).json({ mensaje: 'No se encontró la tienda.' });
+    }
 
-      const { nombreCliente, nombreTienda, direccion, descripcion, productos } = tienda;
+    const { nombreCliente, nombreTienda, direccion, descripcion, productos } = tienda;
 
-      if (productos && productos.length > 0) {
-          const productosConInfo = productos.map(prod => ({
-              _id: prod.producto._id,  
-              nombre: prod.producto.nombreProducto,
-              precio: prod.producto.precio
-          }));
+    if (productos && productos.length > 0) {
+      const productosConInfo = productos.map(prod => ({
+        _id: prod.producto._id,  
+        nombre: prod.producto.nombreProducto,
+        precio: prod.precio  
+      }));
 
-          res.status(200).json({ nombreCliente, nombreTienda, direccion, descripcion, productos: productosConInfo });
-      } else {
-          res.status(200).json({ nombreTienda, direccion, descripcion, mensaje: 'No tiene productos registrados' });
-      }
+      res.status(200).json({ nombreCliente, nombreTienda, direccion, descripcion, productos: productosConInfo });
+    } else {
+      res.status(200).json({ nombreTienda, direccion, descripcion, mensaje: 'No tiene productos registrados' });
+    }
 
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al obtener los detalles de la tienda' });
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener los detalles de la tienda' });
   }
-}
+};
 
 // Controlador para obtener todas las tiendas sin límites ni paginación
 const tiendaSelect = async (req, res) => {
