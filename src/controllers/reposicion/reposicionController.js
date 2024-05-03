@@ -117,7 +117,13 @@ const obtenerDetallesProductos = async (req, res) => {
       return res.status(404).json({ error: 'Reposición no encontrada' });
     }
 
-    const productosConInfo = reposicion.productos.map(producto => ({
+    
+    const productosConInfo = reposicion.productos.filter(producto => 
+      producto.cantidadExhibida > 0 ||
+      producto.deposito > 0 ||
+      producto.sugerido > 0 ||
+      producto.vencidos > 0
+    ).map(producto => ({
       producto: producto.producto,
       cantidadExhibida: producto.cantidadExhibida,
       deposito: producto.deposito,
