@@ -19,7 +19,7 @@ mainRoutes.use('/tiendas', tiendaRoutes);
 mainRoutes.use('/producciones', checkRole(['admin']), produccionesRoutes)
 mainRoutes.use('/insumos', checkRole(['admin']), insumoRoutes)
 mainRoutes.use('/clientes', checkRole(['admin']) ,clienteRoutes)
-mainRoutes.use('/reposiciones', checkRole(['admin', 'repositor']), reposicionRoutes)
+mainRoutes.use('/reposiciones', checkRole(['admin','vendedor','repositor']), reposicionRoutes)
 mainRoutes.use('/pedidos', pedidoRoutes)
 mainRoutes.use('/login', authRoutes)
 
