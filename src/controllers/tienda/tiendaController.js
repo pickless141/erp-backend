@@ -152,7 +152,8 @@ const tiendaDetalle = async (req, res) => {
   try {
       const tienda = await Tienda.findById(tiendaId).populate({
           path: 'productos.producto',
-          select: '_id nombreProducto precio' 
+          select: '_id nombreProducto',
+          path: 'productos.precio' 
       });
 
       if (!tienda) {
