@@ -37,10 +37,6 @@ const pedidoSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  fechaEntrega: {
-    type: Date,
-    default: null, 
-  },
   usuario: { 
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Usuarios',
