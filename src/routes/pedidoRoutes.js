@@ -9,7 +9,7 @@ pedidoRoutes.get('/', checkRole(['admin', 'vendedor']), pedidoController.obtener
 pedidoRoutes.get('/:pedidoId', checkRole(['admin', 'vendedor']), pedidoController.obtenerPedidoPorId);
 
 pedidoRoutes.get('/tienda/:tiendaId', checkRole(['admin']), pedidoController.pedidosTienda);
-pedidoRoutes.get('/:id/resumenPedido', checkRole(['admin']), pedidoController.pedidoResumen);
+pedidoRoutes.get('/:id/resumen', checkRole(['admin']), pedidoController.pedidoResumen);
 
 pedidoRoutes.put('/:pedidoId/cambiarEstado', checkRole(['admin']), pedidoController.cambiarEstadoPedido);
 pedidoRoutes.put('/editar/:pedidoId', checkRole(['admin', 'vendedor']), pedidoController.editarPedido);
