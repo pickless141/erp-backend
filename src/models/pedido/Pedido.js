@@ -23,16 +23,23 @@ const pedidoSchema = new mongoose.Schema({
     required: true,
   },
   pedido: [pedidoProductoSchema],
+  descripcion: {
+    type: String,
+  },
   total: Number,
   IVA: Number,
   estado: {
     type: String,
     default: "PENDIENTE",
-    enum: ['PENDIENTE', 'COMPLETADO', 'CANCELADO'],
+    enum: ['PENDIENTE', 'SUGERIDO','COMPLETADO', 'CANCELADO'],
   },
   fechaPedido: {
     type: Date,
     default: Date.now,
+  },
+  fechaEntrega: {
+    type: Date,
+    default: null, 
   },
   usuario: { 
     type: mongoose.Schema.Types.ObjectId,

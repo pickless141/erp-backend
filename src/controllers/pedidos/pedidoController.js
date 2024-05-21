@@ -1,10 +1,10 @@
-const Pedido = require('../../models/pedido/Pedido.js');
-const Producto = require('../../models/producto/Producto.js');
+const Pedido = require('../../models/pedido/Pedido.js')
+const Producto = require('../../models/producto/Producto.js')
 const Tienda = require('../../models/tienda/Tienda.js')
 
 
 const nuevoPedido = async (req, res) => {
-  const { tiendaId, productos } = req.body; 
+  const { tiendaId, productos, descripcion } = req.body; 
   const usuarioId = req.usuarioId; 
   
   try {
@@ -40,6 +40,7 @@ const nuevoPedido = async (req, res) => {
       usuario: usuarioId,
       tienda: tiendaEncontrada._id,
       pedido: pedidoConInfoProducto,
+      descripcion,
       total,
       IVA,
     });
@@ -53,7 +54,7 @@ const nuevoPedido = async (req, res) => {
 };
 
 const pedidoVendedor = async (req, res) => {
-  const { tiendaId } = req.body;
+  const { tiendaId, descripcion, fechaEntrega } = req.body;
   const usuarioId = req.usuarioId;
   try {
     const tienda = await Tienda.findById(tiendaId).populate('productos.producto');
@@ -74,7 +75,7 @@ const pedidoVendedor = async (req, res) => {
       pedidoProductos.push({
         producto: productoEnTienda.producto._id,
         cantidad,
-        precio: productoEnTienda.precio
+        precio: productoEnTienda.precio,
       });
     }
 
@@ -85,8 +86,10 @@ const pedidoVendedor = async (req, res) => {
       tienda: tienda._id,
       pedido: pedidoProductos,
       total,
+      descripcion,
       IVA,
-      estado: 'PENDIENTE'
+      estado: 'PENDIENTE',
+      fechaEntrega: fechaEntrega || null,
     });
 
     const resultadoPedido = await nuevoPedido.save();
@@ -112,23 +115,41 @@ const obtenerTodosLosPedidos = async (req, res) => {
       .limit(perPage)
       .populate({
         path: 'tienda',
-        populate: {
-          path: 'productos.producto'
-        }
+        select: 'nombreCliente nombreTienda',
       })
-      .populate('pedido.producto')
-      .populate('usuario', 'nombre apellido');
+      .populate('usuario', 'nombre apellido')
+      .select('estado descripcion usuario total IVA tienda fechaEntrega');
 
     const response = {
       docs,
       totalDocs,
-      limit: perPage
+      limit: perPage,
     };
 
     res.status(200).json(response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener los pedidos' });
+  }
+};
+
+const obtenerPedidoPorId = async (req, res) => {
+  const { pedidoId } = req.params;
+
+  try {
+    const pedido = await Pedido.findById(pedidoId)
+      .populate('pedido.producto', 'nombreProducto')
+      .populate('tienda', 'nombreCliente nombreTienda direccion')
+      .populate('usuario', 'nombre apellido');
+
+    if (!pedido) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    res.status(200).json({ pedido });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener el pedido: ' + error.message });
   }
 };
 
@@ -179,25 +200,31 @@ const pedidoResumen = async (req, res) => {
       .populate({
         path: 'pedido.producto', 
         select: 'nombreProducto existencia'  
+      })
+      .populate({
+        path: 'tienda',
+        select: 'nombreTienda'
       });
 
     if (!pedido) {
       return res.status(404).json({ error: 'Pedido no encontrado' });
     }
 
-    
     const productosConInfo = pedido.pedido.map(item => ({
       producto: item.producto.nombreProducto,  
       cantidad: item.cantidad,
       _id: item._id
     }));
 
-    res.status(200).json({ pedidos: productosConInfo });
+    res.status(200).json({ 
+      pedidos: productosConInfo,
+      tienda: { nombre: pedido.tienda.nombreTienda }
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al cargar el resumen del pedido' });
   }
-}
+};
 
 
 const cambiarEstadoPedido = async (req, res) => {
@@ -239,7 +266,61 @@ const cambiarEstadoPedido = async (req, res) => {
   }
 };
 
-// Controlador para eliminar un pedido
+const editarPedido = async (req, res) => {
+  const { pedidoId } = req.params;
+  const { descripcion, productos, fechaEntrega } = req.body;
+
+  try {
+    const pedido = await Pedido.findById(pedidoId).populate('pedido.producto');
+    if (!pedido) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    pedido.descripcion = descripcion || '';
+
+    let total = 0;
+    const nuevoPedido = [];
+
+    for (const articulo of productos) {
+      const { productoId, cantidad } = articulo;
+
+      const tienda = await Tienda.findById(pedido.tienda).populate('productos.producto');
+      const productoEnTienda = tienda.productos.find(p => p.producto._id.toString() === productoId);
+      if (!productoEnTienda) {
+        return res.status(404).json({ error: `Producto con ID ${productoId} no encontrado en la tienda` });
+      }
+
+      const precio = productoEnTienda.precio;
+      const subtotal = precio * cantidad;
+      total += subtotal;
+
+      nuevoPedido.push({
+        producto: productoEnTienda.producto._id,
+        cantidad,
+        precio,
+      });
+    }
+
+    pedido.pedido = nuevoPedido;
+    pedido.total = total;
+    pedido.IVA = Math.floor(total / 11) || 0;
+
+    if (fechaEntrega !== undefined) {
+      pedido.fechaEntrega = fechaEntrega === '' ? null : fechaEntrega;
+    }
+
+    const pedidoActualizado = await pedido.save();
+
+    return res.status(200).json({
+      mensaje: 'Pedido actualizado exitosamente',
+      pedido: pedidoActualizado
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error al actualizar el pedido: ' + error.message });
+  }
+};
+
 const eliminarPedido = async (req, res) => {
   const { pedidoId } = req.params;
 
@@ -257,4 +338,4 @@ const eliminarPedido = async (req, res) => {
   }
 };
   
-module.exports = { nuevoPedido, pedidoVendedor,obtenerTodosLosPedidos, pedidoResumen, pedidosTienda, cambiarEstadoPedido, eliminarPedido };
+module.exports = { nuevoPedido, pedidoVendedor,obtenerTodosLosPedidos, obtenerPedidoPorId, pedidoResumen, pedidosTienda, cambiarEstadoPedido, editarPedido, eliminarPedido };

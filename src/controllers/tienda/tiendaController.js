@@ -144,16 +144,12 @@ const obtenerTiendasPorCliente = async (req, res) => {
     res.status(500).json({ error: 'Error al buscar tiendas por cliente.' });
   }
 };
-
 //Controlador para obtener detalles de una tienda
 const tiendaDetalle = async (req, res) => {
   const tiendaId = req.params.id;
 
   try {
-    const tienda = await Tienda.findById(tiendaId).populate({
-      path: 'productos.producto', 
-      select: '_id nombreProducto'  
-    });
+    const tienda = await Tienda.findById(tiendaId);
 
     if (!tienda) {
       return res.status(404).json({ mensaje: 'No se encontró la tienda.' });
@@ -162,10 +158,13 @@ const tiendaDetalle = async (req, res) => {
     const { nombreCliente, nombreTienda, direccion, descripcion, productos } = tienda;
 
     if (productos && productos.length > 0) {
-      const productosConInfo = productos.map(prod => ({
-        _id: prod.producto._id,  
-        nombre: prod.producto.nombreProducto,
-        precio: prod.precio  
+      const productosConInfo = await Promise.all(productos.map(async (prod) => {
+        const producto = await Producto.findById(prod.producto);
+        return {
+          _id: producto._id,
+          nombreProducto: producto ? producto.nombreProducto : 'Producto no encontrado',
+          precio: prod.precio,
+        };
       }));
 
       res.status(200).json({ nombreCliente, nombreTienda, direccion, descripcion, productos: productosConInfo });
@@ -175,9 +174,9 @@ const tiendaDetalle = async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al obtener los detalles de la tienda' });
+    res.status(500).json({ error: 'Error al obtener los detalles de la tienda' })
   }
-};
+}
 
 // Controlador para obtener todas las tiendas sin límites ni paginación
 const tiendaSelect = async (req, res) => {
@@ -193,7 +192,6 @@ const tiendaSelect = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener todas las tiendas' });
   }
 }
-
 //Controlador para actualizar tiendas
 const actualizarTienda = async (req, res) => {
   const { id } = req.params;
