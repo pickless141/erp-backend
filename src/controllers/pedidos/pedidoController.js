@@ -54,7 +54,7 @@ const nuevoPedido = async (req, res) => {
 };
 
 const pedidoVendedor = async (req, res) => {
-  const { tiendaId, descripcion, fechaEntrega } = req.body;
+  const { tiendaId, descripcion } = req.body; 
   const usuarioId = req.usuarioId;
   try {
     const tienda = await Tienda.findById(tiendaId).populate('productos.producto');
@@ -79,7 +79,7 @@ const pedidoVendedor = async (req, res) => {
       });
     }
 
-    const IVA = Math.floor(total / 11); 
+    const IVA = Math.floor(total / 11);
 
     const nuevoPedido = new Pedido({
       usuario: usuarioId,
@@ -89,7 +89,6 @@ const pedidoVendedor = async (req, res) => {
       descripcion,
       IVA,
       estado: 'PENDIENTE',
-      fechaEntrega: fechaEntrega || null,
     });
 
     const resultadoPedido = await nuevoPedido.save();
@@ -101,7 +100,7 @@ const pedidoVendedor = async (req, res) => {
     console.error(error);
     return res.status(500).json({ error: 'Error al registrar el pedido: ' + error.message });
   }
-}
+};
 
 const obtenerTodosLosPedidos = async (req, res) => {
   try {
@@ -118,10 +117,10 @@ const obtenerTodosLosPedidos = async (req, res) => {
         select: 'nombreCliente nombreTienda',
       })
       .populate('usuario', 'nombre apellido')
-      .select('estado descripcion usuario total IVA tienda fechaEntrega');
+      .select('estado descripcion usuario total IVA tienda'); 
 
     const response = {
-      docs,
+      docs, 
       totalDocs,
       limit: perPage,
     };
@@ -268,7 +267,7 @@ const cambiarEstadoPedido = async (req, res) => {
 
 const editarPedido = async (req, res) => {
   const { pedidoId } = req.params;
-  const { descripcion, productos, fechaEntrega } = req.body;
+  const { descripcion, productos } = req.body;
 
   try {
     const pedido = await Pedido.findById(pedidoId).populate('pedido.producto');
@@ -304,10 +303,6 @@ const editarPedido = async (req, res) => {
     pedido.pedido = nuevoPedido;
     pedido.total = total;
     pedido.IVA = Math.floor(total / 11) || 0;
-
-    if (fechaEntrega !== undefined) {
-      pedido.fechaEntrega = fechaEntrega === '' ? null : fechaEntrega;
-    }
 
     const pedidoActualizado = await pedido.save();
 
