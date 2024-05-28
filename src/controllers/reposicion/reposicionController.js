@@ -6,7 +6,7 @@ const Producto = require('../../models/producto/Producto.js')
 // Controlador para crear una reposición de productos en una tienda
 const agregarReposicion = async (req, res) => {
   try {
-    const { tiendaId, productos } = req.body;
+    const { tiendaId, productos, categoria } = req.body;
     const usuarioId = req.usuarioId;
 
     const tienda = await Tienda.findById(tiendaId);
@@ -14,27 +14,27 @@ const agregarReposicion = async (req, res) => {
       return res.status(404).json({ error: 'La tienda no existe' });
     }
 
-    const productosConInfo = await Promise.all(productos.map(async (producto) => {
-      const productoInfo = await Producto.findById(producto.producto);
+    const productosFiltrados = await Producto.find({ categoria });
+
+    const productosConInfo = productos.map(producto => {
+      const productoInfo = productosFiltrados.find(p => p._id.equals(producto.producto));
 
       if (!productoInfo) {
         return null; 
       }
       return {
-        producto: productoInfo,
+        producto: producto.producto,
         cantidadExhibida: producto.cantidadExhibida,
         deposito: producto.deposito,
         sugerido: producto.sugerido,
         vencidos: producto.vencidos,
         _id: producto._id
       };
-    }));
-
-    const productosValidos = productosConInfo.filter(producto => producto !== null);
+    }).filter(producto => producto !== null);
 
     const nuevaReposicion = new Reposicion({
       tienda: tiendaId,
-      productos: productosValidos,
+      productos: productosConInfo,
       usuario: usuarioId
     });
 
@@ -54,8 +54,9 @@ const obtenerReposiciones = async (req, res) => {
 
     const reposiciones = await Reposicion.find({})
       .sort({ fechaReposicion: -1 })
-      .populate('tienda')
+      .populate('tienda', 'nombreTienda')
       .populate('usuario', 'nombre apellido email')
+      .populate('productos.producto', 'categoria nombreProducto') 
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
 
@@ -152,6 +153,7 @@ const obtenerReposicionesPorTienda = async (req, res) => {
     const totalReposiciones = await Reposicion.countDocuments(filter);
     const reposiciones = await Reposicion.find(filter)
       .populate('usuario', 'nombre apellido email')
+      .populate('productos.producto', 'categoria nombreProducto')
       .skip(skip)
       .limit(limit);
 
