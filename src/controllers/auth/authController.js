@@ -14,7 +14,7 @@ const iniciarSesion = async (req, res) => {
       return res.status(401).json({ error: 'El Email no es válido' });
     }
 
-    const contrasenaValida = bcrypt.compare(password, usuario.password);
+    const contrasenaValida = await bcrypt.compare(password, usuario.password);
     if (!contrasenaValida) {
       return res.status(401).json({ error: 'Contraseña incorrecta' });
     }
