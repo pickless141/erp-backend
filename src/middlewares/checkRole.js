@@ -12,6 +12,7 @@ const checkRole = (allowedRoles) => {
     try {
       const decoded = jwt.verify(token, jwtSecret);
       req.usuarioId = decoded.userId;
+      req.empresa = decoded.empresa;
 
       if (!allowedRoles.some(role => decoded.roles.includes(role))) {
         return res.status(403).json({ message: 'Acceso denegado. Rol no autorizado.' });

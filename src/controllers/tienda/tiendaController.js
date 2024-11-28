@@ -5,25 +5,21 @@ const Producto = require('../../models/producto/Producto')
 // Controlador para crear una tienda y asignarle un cliente con productos y precios
 const crearTienda = async (req, res) => {
   try {
-    const { nombreCliente, nombreTienda, direccion, descripcion, productos } = req.body;
-
-    let clienteExistente = await Cliente.findOne({ nombre: nombreCliente });
+    const { cliente, nombreTienda, direccion, descripcion, productos } = req.body; 
+    
+    let clienteExistente = await Cliente.findById(cliente);
 
     if (!clienteExistente) {
-      clienteExistente = new Cliente({
-        nombre: nombreCliente,
-      });
-      await clienteExistente.save();
+      return res.status(404).json({ error: 'Cliente no encontrado' });
     }
 
-    
     const nuevaTienda = new Tienda({
       cliente: clienteExistente._id,
-      nombreCliente: nombreCliente,
+      nombreCliente: clienteExistente.nombre, 
       nombreTienda,
       direccion,
       descripcion,
-      productos, 
+      productos,
     });
 
     await nuevaTienda.save();
@@ -182,6 +178,10 @@ const tiendaDetalle = async (req, res) => {
 const tiendaSelect = async (req, res) => {
   try {
     const tiendas = await Tienda.find()
+      .populate({
+        path: 'cliente',
+        select: 'nombre ruc'  
+      })
       .populate({
         path: 'productos.producto',
         select: 'nombreProducto precio'  

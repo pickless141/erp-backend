@@ -50,30 +50,11 @@ const agregarReposicion = async (req, res) => {
 // Controlador para obtener reposiciones con paginación
 const obtenerReposiciones = async (req, res) => {
   try {
-    const { page = 1, limit = 5 } = req.query;
+    const reposiciones = req.reposicionesFiltradas;  
+    const totalDocs = req.totalDocs;  
+    const limit = parseInt(req.query.limit) || 5;
 
-    const reposiciones = await Reposicion.find({})
-      .sort({ fechaReposicion: -1 })
-      .populate('tienda', 'nombreTienda')
-      .populate('usuario', 'nombre apellido email')
-      .populate('productos.producto', 'categoria nombreProducto') 
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
-
-    const reposicionesFiltradas = reposiciones.map(reposicion => {
-      const productosCompletos = reposicion.productos.filter(producto =>
-        producto.cantidadExhibida !== 0 ||
-        producto.deposito !== 0 ||
-        producto.sugerido !== 0 ||
-        producto.vencidos !== 0
-      );
-      reposicion.productos = productosCompletos;
-      return reposicion;
-    });
-
-    const totalDocs = await Reposicion.countDocuments();
-
-    res.status(200).json({ docs: reposicionesFiltradas, totalDocs, limit: parseInt(limit) });
+    res.status(200).json({ docs: reposiciones, totalDocs, limit });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener reposiciones' });
@@ -171,6 +152,48 @@ const obtenerReposicionesPorTienda = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener las reposiciones de la tienda' });
   }
 };
+const ultimasReposicionPorTienda = async (req, res) => {
+  try {
+    const { tiendaId } = req.params;
+    const { categoria } = req.query; 
+
+    const reposicionesPorTienda = req.reposicionesFiltradas?.filter(
+      (reposicion) => String(reposicion.tienda._id) === tiendaId
+    ) || [];
+
+    const reposicionesFiltradasPorCategoria = categoria
+      ? reposicionesPorTienda.map((reposicion) => ({
+          ...reposicion,
+          productos: reposicion.productos.filter(
+            (producto) => producto.producto?.categoria === categoria
+          ),
+        }))
+      : reposicionesPorTienda;
+
+    const reposicionesValidas = reposicionesFiltradasPorCategoria.filter(
+      (reposicion) => reposicion.productos.length > 0
+    );
+
+    const reposicionesOrdenadas = reposicionesValidas.sort(
+      (a, b) => new Date(b.fechaReposicion) - new Date(a.fechaReposicion)
+    );
+
+    const ultimasReposiciones = reposicionesOrdenadas.slice(0, 2);
+
+    if (ultimasReposiciones.length === 0) {
+      return res.status(404).json({
+        mensaje: "No se encontraron reposiciones para esta tienda y categoría.",
+      });
+    }
+
+    res.status(200).json({ reposiciones: ultimasReposiciones });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Error al obtener las últimas reposiciones de la tienda y categoría.",
+    });
+  }
+};
 
 //Controlador para eliminar reposiciones
 const eliminarReposicion = async (req, res) => {
@@ -188,4 +211,4 @@ const eliminarReposicion = async (req, res) => {
   }
 }
 
-module.exports = { agregarReposicion, obtenerReposiciones, obtenerReposicionesPorTienda, obtenerDetallesProductos, buscarReposicionPorId, eliminarReposicion };
+module.exports = { agregarReposicion, obtenerReposiciones, obtenerReposicionesPorTienda, obtenerDetallesProductos, buscarReposicionPorId, ultimasReposicionPorTienda, eliminarReposicion };

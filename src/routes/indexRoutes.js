@@ -11,16 +11,20 @@ const reposicionRoutes = require('./reposicionRoutes.js')
 const pedidoRoutes = require('./pedidoRoutes.js')
 const authRoutes = require('./authRoutes.js')
 const insumoRoutes = require('./insumoRoutes.js')
+const estadisticasRoutes = require('./estadisticasRoutes.js');
+const facturacionRoutes = require('./facturacionRoutes.js');
 
 
-mainRoutes.use('/productos', checkRole(['admin', 'vendedor', 'repositor']), productoRoutes)
+mainRoutes.use('/productos', checkRole(['admin', 'vendedor', 'repositor', 'tercerizado']), productoRoutes)
 mainRoutes.use('/usuarios', checkRole(['admin']), userRoutes)
 mainRoutes.use('/tiendas', tiendaRoutes);
 mainRoutes.use('/producciones', checkRole(['admin']), produccionesRoutes)
 mainRoutes.use('/insumos', checkRole(['admin']), insumoRoutes)
-mainRoutes.use('/clientes', checkRole(['admin']) ,clienteRoutes)
-mainRoutes.use('/reposiciones', checkRole(['admin','vendedor','repositor']), reposicionRoutes)
+mainRoutes.use('/clientes', checkRole(['admin']), clienteRoutes)
+mainRoutes.use('/reposiciones', checkRole(['admin','vendedor','repositor', 'tercerizado']), reposicionRoutes)
+mainRoutes.use('/facturacion', checkRole(['admin']), facturacionRoutes)
 mainRoutes.use('/pedidos', pedidoRoutes)
 mainRoutes.use('/login', authRoutes)
+mainRoutes.use('/estadisticas', estadisticasRoutes);
 
 module.exports = mainRoutes

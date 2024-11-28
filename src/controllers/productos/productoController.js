@@ -23,8 +23,7 @@ const crearProducto = async (req, res) => {
 // Controlador para obtener todos los productos
 const obtenerTodosLosProductos = async (req, res) => {
   try {
-    const productos = await Producto.find();
-
+    const productos = req.filtrarProductos; 
     res.status(200).json(productos);
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener todos los productos' });
