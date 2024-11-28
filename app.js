@@ -1,9 +1,9 @@
+const morgan = require('morgan')
 //const crypto = require('crypto');
 const express = require('express');
 const cors = require('cors')
 const mainRoutes = require('./src/routes/indexRoutes')
 
-// Crear el servidor
 const app = express();
 
 const allowedOrigin = process.env.FRONTEND_URL
@@ -13,11 +13,13 @@ const allowedOrigin = process.env.FRONTEND_URL
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(morgan('dev'))
+
 app.use(
     cors({
       origin: allowedOrigin,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-      credentials: true, // Habilita las cookies y encabezados de autenticación
+      credentials: true, 
     })
 );
 

@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const clienteSchema = new mongoose.Schema({
   nombre: String,
   ruc: {
-    type: String,
-    required: true,
+    type: String, 
     unique: true,
   },
   telefono: Number,

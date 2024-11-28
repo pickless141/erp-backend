@@ -14,18 +14,23 @@ const iniciarSesion = async (req, res) => {
       return res.status(401).json({ error: 'El Email no es válido' });
     }
 
-    const contrasenaValida = await bcrypt.compare(password, usuario.password);
+    const contrasenaValida = bcrypt.compare(password, usuario.password);
     if (!contrasenaValida) {
       return res.status(401).json({ error: 'Contraseña incorrecta' });
     }
     
-    const token = jwt.sign({ userId: usuario._id, roles: usuario.roles, nombre: usuario.nombre, apellido: usuario.apellido}, jwtSecret, {
+    const token = jwt.sign({ userId: usuario._id, roles: usuario.roles, empresa: usuario.empresa, nombre: usuario.nombre, apellido: usuario.apellido }, jwtSecret, {
       expiresIn: '6h', 
     });
-    
 
-    res.status(200).json({ token, nombre: usuario.nombre, apellido: usuario.apellido });
+    res.status(200).json({
+      token,
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      roles: usuario.roles 
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Error al iniciar sesión' });
   }
 };

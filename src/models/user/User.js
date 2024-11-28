@@ -21,11 +21,12 @@ const userSchema = new Schema({
         unique: true,
         trim: true
     },
-    roles: [
-        "admin",
-        "vendedor",
-        "repositor"
-    ]
+    roles: [String],
+    empresa: {
+        type: String,
+        enum: ['Lievito', 'EatWell'],
+        required: true
+    }
 });
 
 module.exports = mongoose.model('Usuarios', userSchema)

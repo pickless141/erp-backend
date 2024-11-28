@@ -2,7 +2,6 @@ const Pedido = require('../../models/pedido/Pedido.js')
 const Producto = require('../../models/producto/Producto.js')
 const Tienda = require('../../models/tienda/Tienda.js')
 
-
 const nuevoPedido = async (req, res) => {
   const { tiendaId, productos, descripcion } = req.body; 
   const usuarioId = req.usuarioId; 

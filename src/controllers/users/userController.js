@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 
 
 const crearUsuario = async (req, res) => {
-  const { nombre, apellido, email, password, roles } = req.body;
+  const { nombre, apellido, email, password, roles, empresa } = req.body;
 
   try {
     const usuarioExistente = await Usuario.findOne({ email });
@@ -20,12 +20,14 @@ const crearUsuario = async (req, res) => {
       email,
       password: hashedPassword,
       roles, 
+      empresa
     });
 
     await nuevoUsuario.save();
 
     res.status(201).json({ mensaje: 'Usuario creado exitosamente' });
   } catch (error) {
+    console.error(error)
     res.status(500).json({ error: 'Error al crear el usuario' });
   }
 };
