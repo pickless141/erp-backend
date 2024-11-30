@@ -11,9 +11,17 @@ const checkRole = (allowedRoles) => {
 
     try {
       const decoded = jwt.verify(token, jwtSecret);
-      req.usuarioId = decoded.userId;
-      req.empresa = decoded.empresa;
 
+      // Configurar `req.user` con toda la información del token
+      req.user = {
+        id: decoded.userId,
+        roles: decoded.roles,
+        empresa: decoded.empresa,
+        nombre: decoded.nombre,
+        apellido: decoded.apellido,
+      };
+
+      // Verificar si el rol del usuario está permitido
       if (!allowedRoles.some(role => decoded.roles.includes(role))) {
         return res.status(403).json({ message: 'Acceso denegado. Rol no autorizado.' });
       }
@@ -21,7 +29,7 @@ const checkRole = (allowedRoles) => {
       next();
     } catch (error) {
       res.status(400).json({ message: 'Token inválido.' });
-      console.log(error)
+      console.error(error);
     }
   };
 };
