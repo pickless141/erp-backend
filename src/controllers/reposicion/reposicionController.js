@@ -50,9 +50,26 @@ const agregarReposicion = async (req, res) => {
 // Controlador para obtener reposiciones con paginación
 const obtenerReposiciones = async (req, res) => {
   try {
-    const reposiciones = req.reposicionesFiltradas;  
-    const totalDocs = req.totalDocs;  
-    const limit = parseInt(req.query.limit) || 5;
+    const { page = 1, limit = 5, usuario } = req.query;
+
+    const filter = {};
+    if (usuario) {
+      filter.usuario = usuario; 
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [reposiciones, totalDocs] = await Promise.all([
+      Reposicion.find(filter)
+        .populate('tienda')
+        .populate('usuario')
+        .populate('productos.producto')
+        .sort({ fechaReposicion: -1 })
+        .skip(skip)
+        .limit(parseInt(limit))
+        .exec(),
+      Reposicion.countDocuments(filter),
+    ]);
 
     res.status(200).json({ docs: reposiciones, totalDocs, limit });
   } catch (error) {
