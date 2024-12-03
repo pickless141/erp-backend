@@ -70,4 +70,21 @@ const obtenerFacturas = async (req, res) => {
     }
 };
 
-module.exports = { crearFactura, obtenerFacturas };
+const eliminarFactura = async (req, res) => {
+  const {facturaId} = req.params
+  try {
+    const facturaEliminada = await Facturacion.findOneAndDelete({_id: facturaId})
+
+   if(!facturaEliminada) {
+    return res.status(404).json({error: "Factura no encontrada"})
+   }
+
+   return res.status(200).json({mensaje: "Factura eliminada correctamente"})
+
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({error: "Error al eliminar una factura"})
+  }
+}
+
+module.exports = { crearFactura, obtenerFacturas, eliminarFactura };

@@ -4,7 +4,7 @@ const Tienda = require('../../models/tienda/Tienda.js')
 
 const nuevoPedido = async (req, res) => {
   const { tiendaId, productos, descripcion } = req.body; 
-  const usuarioId = req.usuarioId; 
+  const userId = req.user.id; 
   
   try {
     const tiendaEncontrada = await Tienda.findById(tiendaId).populate('productos.producto');
@@ -36,7 +36,7 @@ const nuevoPedido = async (req, res) => {
 
     IVA = Math.floor(total / 11);
     const nuevoPedido = new Pedido({
-      usuario: usuarioId,
+      usuario: userId,
       tienda: tiendaEncontrada._id,
       pedido: pedidoConInfoProducto,
       descripcion,

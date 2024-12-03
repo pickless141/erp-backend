@@ -2,7 +2,7 @@ const Reposicion = require('../models/reposicion/Reposicion');
 
 const filtrarReposiciones = async (req, res, next) => {
   const usuarioEmpresa = req.empresa;
-  const { page = 1, limit = 5, categoria } = req.query; // Ahora también se toma la categoría como query param
+  const { page = 1, limit = 5, categoria } = req.query; 
   const tiendaId = req.params.tiendaId;
 
   try {
@@ -17,7 +17,7 @@ const filtrarReposiciones = async (req, res, next) => {
       .populate({
         path: 'productos.producto',
         match: {
-          ...(categoria ? { categoria } : {}), // Agregar el filtro de categoría si está definido
+          ...(categoria ? { categoria } : {}), 
           ...(usuarioEmpresa === 'EatWell' ? { categoria: 'EatWell' } : {}),
         },
         select: 'nombreProducto categoria',
@@ -34,7 +34,7 @@ const filtrarReposiciones = async (req, res, next) => {
     );
 
     if (tiendaId) {
-      req.reposicionesFiltradas = filteredReposiciones.slice(0, 2); // Últimas 2 reposiciones
+      req.reposicionesFiltradas = filteredReposiciones.slice(0, 2); 
     } else {
       req.reposicionesFiltradas = filteredReposiciones.slice((page - 1) * limit, page * limit);
     }

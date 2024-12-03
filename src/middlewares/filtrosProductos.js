@@ -1,7 +1,7 @@
 const Producto = require('../models/producto/Producto');
 
-const filtrarProductosEmpresas = async (req, res, next) => {
-  const usuarioEmpresa = req.empresa;  
+const filtrarProductosCategoria = async (req, res, next) => {
+  const usuarioEmpresa = req.user.empresa;  
 
   try {
     if (usuarioEmpresa === 'EatWell') {
@@ -17,4 +17,4 @@ const filtrarProductosEmpresas = async (req, res, next) => {
   }
 };
 
-module.exports = filtrarProductosEmpresas;
+module.exports = filtrarProductosCategoria;
