@@ -27,7 +27,8 @@ const iniciarSesion = async (req, res) => {
       token,
       nombre: usuario.nombre,
       apellido: usuario.apellido,
-      roles: usuario.roles 
+      roles: usuario.roles,
+      empresa: usuario.empresa
     });
   } catch (error) {
     console.error(error);

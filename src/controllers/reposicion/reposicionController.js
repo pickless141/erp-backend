@@ -7,7 +7,7 @@ const Producto = require('../../models/producto/Producto.js')
 const agregarReposicion = async (req, res) => {
   try {
     const { tiendaId, productos, categoria } = req.body;
-    const usuarioId = req.usuarioId;
+    const usuarioId = req.user.id;
 
     const tienda = await Tienda.findById(tiendaId);
     if (!tienda) {
@@ -57,13 +57,19 @@ const obtenerReposiciones = async (req, res) => {
       filter.usuario = usuario; 
     }
 
+    if (req.user && req.user.empresa === 'EatWell') {
+      const productosEatWell = await Producto.find({ categoria: 'EatWell' }).select('_id');
+      
+      filter['productos.producto'] = { $in: productosEatWell.map(p => p._id) };
+    }
+
     const skip = (page - 1) * limit;
 
     const [reposiciones, totalDocs] = await Promise.all([
       Reposicion.find(filter)
         .populate('tienda')
         .populate('usuario')
-        .populate('productos.producto')
+        .populate('productos.producto') 
         .sort({ fechaReposicion: -1 })
         .skip(skip)
         .limit(parseInt(limit))
