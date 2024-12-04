@@ -12,7 +12,6 @@ const checkRole = (allowedRoles) => {
     try {
       const decoded = jwt.verify(token, jwtSecret);
 
-      // Configurar `req.user` con toda la información del token
       req.user = {
         id: decoded.userId,
         roles: decoded.roles,
@@ -21,7 +20,6 @@ const checkRole = (allowedRoles) => {
         apellido: decoded.apellido,
       };
 
-      // Verificar si el rol del usuario está permitido
       if (!allowedRoles.some(role => decoded.roles.includes(role))) {
         return res.status(403).json({ message: 'Acceso denegado. Rol no autorizado.' });
       }
