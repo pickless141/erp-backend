@@ -1,8 +1,9 @@
-const Reposicion = require('../models/reposicion/Reposicion');
+const Reposicion = require('../models/reposicion/Reposicion')
+
 
 const filtrarReposiciones = async (req, res, next) => {
   const usuarioEmpresa = req.empresa;
-  const { page = 1, limit = 5, categoria } = req.query; 
+  const { categoria } = req.query; 
   const tiendaId = req.params.tiendaId;
 
   try {
@@ -13,7 +14,7 @@ const filtrarReposiciones = async (req, res, next) => {
     }
 
     const allReposiciones = await Reposicion.find(query)
-      .sort({ fechaReposicion: -1 })
+      .sort({ fechaReposicion: -1 }) 
       .populate({
         path: 'productos.producto',
         match: {
@@ -33,12 +34,7 @@ const filtrarReposiciones = async (req, res, next) => {
         : true
     );
 
-    if (tiendaId) {
-      req.reposicionesFiltradas = filteredReposiciones.slice(0, 2); 
-    } else {
-      req.reposicionesFiltradas = filteredReposiciones.slice((page - 1) * limit, page * limit);
-    }
-
+    req.reposicionesFiltradas = filteredReposiciones; 
     req.totalDocs = filteredReposiciones.length;
 
     next();

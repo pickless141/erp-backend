@@ -15,11 +15,11 @@ const estadisticasRoutes = require('./estadisticasRoutes.js');
 const facturacionRoutes = require('./facturacionRoutes.js');
 
 
-mainRoutes.use('/productos', checkRole(['admin', 'vendedor', 'repositor', 'tercerizado']), productoRoutes)
+mainRoutes.use('/productos', checkRole(['admin', 'vendedor', 'repositor', 'tercerizado', 'produccion']), productoRoutes)
 mainRoutes.use('/usuarios', checkRole(['admin']), userRoutes)
 mainRoutes.use('/tiendas', tiendaRoutes);
-mainRoutes.use('/producciones', checkRole(['admin']), produccionesRoutes)
-mainRoutes.use('/insumos', checkRole(['admin']), insumoRoutes)
+mainRoutes.use('/producciones', checkRole(['admin', 'produccion']), produccionesRoutes)
+mainRoutes.use('/insumos', checkRole(['admin', 'produccion']), insumoRoutes)
 mainRoutes.use('/clientes', checkRole(['admin']), clienteRoutes)
 mainRoutes.use('/reposiciones', checkRole(['admin','vendedor','repositor', 'tercerizado']), reposicionRoutes)
 mainRoutes.use('/facturacion', checkRole(['admin']), facturacionRoutes)

@@ -3,49 +3,50 @@ const Producto = require('../../models/producto/Producto.js');
 
 // Controlador para registrar una producción
 const registrarProduccion = async (req, res) => {
-  const { nombreProducto, cantidadProducida, numeroLote,fechaVencimiento } = req.body;
+  const { productoId, cantidadProducida, numeroLote, fechaVencimiento } = req.body;
 
   try {
-    const productoExistente = await Producto.findOne({ nombreProducto });
+    const productoExistente = await Producto.findById(productoId);
 
-    if (productoExistente) {
-      const produccion = new Produccion({
-        producto: productoExistente._id,
-        cantidadProducida,
-        numeroLote,
-        fechaVencimiento,
-      });
-      await produccion.save();
-
-      await Producto.findOneAndUpdate(
-        { _id: productoExistente._id },
-        { $inc: { existencia: cantidadProducida } }
-      );
-
-      return res.status(201).json({ mensaje: 'Producción registrada exitosamente', produccion });
-    } else {
+    if (!productoExistente) {
       return res.status(404).json({ error: 'Producto no encontrado' });
     }
+
+    const produccion = new Produccion({
+      producto: productoExistente._id,
+      cantidadProducida,
+      numeroLote,
+      fechaVencimiento,
+    });
+
+    await produccion.save();
+
+    await Producto.findByIdAndUpdate(
+      productoExistente._id,
+      { $inc: { existencia: cantidadProducida } }
+    );
+
+    return res.status(201).json({ mensaje: 'Producción registrada exitosamente', produccion });
   } catch (error) {
+    console.error('Error al registrar la producción:', error);
     return res.status(500).json({ error: 'Error al registrar la producción' });
   }
 };
 
 const obtenerProducciones = async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const perPage = parseInt(req.query.perPage) || 10;
-
   try {
-    const totalProducciones = await Produccion.countDocuments();
-    const producciones = await Produccion.find()
-      .skip((page - 1) * perPage)
-      .limit(perPage)
-      .populate('producto')
-      .sort({ fechaProduccion: -1 }); 
+    const { page = 1, search = '', limit = 10 } = req.query; 
+    const skip = (page - 1) * limit;
 
-    res.status(200).json({ producciones, totalProducciones });
+    const filtro = search
+      ? { $or: [{ nombre: { $regex: search, $options: 'i' } }] }
+      : {};
+
+    const docs = await Produccion.find(filtro).skip(skip).limit(Number(limit)).populate('producto'); 
+    const totalDocs = await Produccion.countDocuments(filtro);
+
+    res.status(200).json({ docs, totalDocs, limit: Number(limit) });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: 'Error al obtener las producciones' });
   }
 };
