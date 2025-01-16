@@ -50,7 +50,7 @@ const agregarReposicion = async (req, res) => {
 // Controlador para obtener reposiciones con paginación
 const obtenerReposiciones = async (req, res) => {
   try {
-    const { page = 1, limit = 5, usuario } = req.query;
+    const { page = 1, limit = 5, usuario, search = '' } = req.query;
 
     const filter = {};
     if (usuario) {
@@ -59,8 +59,12 @@ const obtenerReposiciones = async (req, res) => {
 
     if (req.user && req.user.empresa === 'EatWell') {
       const productosEatWell = await Producto.find({ categoria: 'EatWell' }).select('_id');
-      
       filter['productos.producto'] = { $in: productosEatWell.map(p => p._id) };
+    }
+
+    if (search) {
+      const tiendas = await Tienda.find({ nombreTienda: { $regex: search, $options: 'i' } }).select('_id');
+      filter['tienda'] = { $in: tiendas.map(t => t._id) };
     }
 
     const skip = (page - 1) * limit;
@@ -175,33 +179,32 @@ const obtenerReposicionesPorTienda = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener las reposiciones de la tienda' });
   }
 };
+
 const ultimasReposicionPorTienda = async (req, res) => {
   try {
     const { tiendaId } = req.params;
-    const { categoria } = req.query; 
+    const { categoria } = req.query;
 
-    const reposicionesPorTienda = req.reposicionesFiltradas?.filter(
-      (reposicion) => String(reposicion.tienda._id) === tiendaId
-    ) || [];
+    const reposicionesPorTienda = req.reposicionesFiltradas || [];
 
-    const reposicionesFiltradasPorCategoria = categoria
-      ? reposicionesPorTienda.map((reposicion) => ({
-          ...reposicion,
-          productos: reposicion.productos.filter(
-            (producto) => producto.producto?.categoria === categoria
-          ),
-        }))
-      : reposicionesPorTienda;
+    const reposicionesFiltradasPorCategoria = reposicionesPorTienda.map((reposicion) => {
+      const productosFiltrados = reposicion.productos.filter(
+        (producto) => producto.producto?.categoria === categoria
+      );
+
+      return {
+        ...reposicion.toObject(),
+        productos: productosFiltrados,
+      };
+    });
 
     const reposicionesValidas = reposicionesFiltradasPorCategoria.filter(
       (reposicion) => reposicion.productos.length > 0
     );
 
-    const reposicionesOrdenadas = reposicionesValidas.sort(
-      (a, b) => new Date(b.fechaReposicion) - new Date(a.fechaReposicion)
-    );
-
-    const ultimasReposiciones = reposicionesOrdenadas.slice(0, 2);
+    const ultimasReposiciones = reposicionesValidas
+      .sort((a, b) => new Date(b.fechaReposicion) - new Date(a.fechaReposicion))
+      .slice(0, 2);
 
     if (ultimasReposiciones.length === 0) {
       return res.status(404).json({
