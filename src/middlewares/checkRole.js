@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
-const jwtSecret = process.env.jwtSecret
+const jwtSecret = process.env.jwtSecret;
 
 const checkRole = (allowedRoles) => {
   return (req, res, next) => {
-    const token = req.header('x-auth-token');
+    const token = req.cookies?.token;
 
     if (!token) {
       return res.status(401).json({ message: 'Acceso denegado. Token no proporcionado.' });
@@ -20,7 +20,7 @@ const checkRole = (allowedRoles) => {
         apellido: decoded.apellido,
       };
 
-      if (!allowedRoles.some(role => decoded.roles.includes(role))) {
+      if (!allowedRoles.some((role) => decoded.roles.includes(role))) {
         return res.status(403).json({ message: 'Acceso denegado. Rol no autorizado.' });
       }
 

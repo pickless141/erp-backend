@@ -1,13 +1,14 @@
 const morgan = require('morgan')
 //const crypto = require('crypto');
+const cookieParser = require('cookie-parser');
 const express = require('express');
 const cors = require('cors')
 const mainRoutes = require('./src/routes/indexRoutes')
 
 const app = express();
 
-const allowedOrigin = process.env.FRONTEND_URL
 
+app.use(cookieParser());
 
 // Habilitar bodyparser
 app.use(express.json());
@@ -15,6 +16,8 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(morgan('dev'))
 
+
+const allowedOrigin = process.env.FRONTEND_URL
 app.use(
     cors({
       origin: allowedOrigin,

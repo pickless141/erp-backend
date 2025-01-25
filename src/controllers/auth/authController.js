@@ -18,17 +18,30 @@ const iniciarSesion = async (req, res) => {
     if (!contrasenaValida) {
       return res.status(401).json({ error: 'Contraseña incorrecta' });
     }
-    
-    const token = jwt.sign({ userId: usuario._id, roles: usuario.roles, empresa: usuario.empresa, nombre: usuario.nombre, apellido: usuario.apellido }, jwtSecret, {
-      expiresIn: '6h', 
+
+    const token = jwt.sign(
+      {
+        userId: usuario._id,
+        roles: usuario.roles,
+        empresa: usuario.empresa,
+        nombre: usuario.nombre,
+        apellido: usuario.apellido,
+      },
+      jwtSecret,
+      { expiresIn: '6h' }
+    );
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', 
+      maxAge: 6 * 60 * 60 * 1000, 
     });
 
     res.status(200).json({
-      token,
       nombre: usuario.nombre,
       apellido: usuario.apellido,
       roles: usuario.roles,
-      empresa: usuario.empresa
+      empresa: usuario.empresa,
     });
   } catch (error) {
     console.error(error);
