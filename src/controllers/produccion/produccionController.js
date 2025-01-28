@@ -1,7 +1,7 @@
 const Produccion = require('../../models/produccion/Produccion.js');
 const Producto = require('../../models/producto/Producto.js');
+const Deposito = require('../../models/deposito/Deposito.js')
 
-// Controlador para registrar una producción
 const registrarProduccion = async (req, res) => {
   const { productoId, cantidadProducida, numeroLote, fechaVencimiento } = req.body;
 
@@ -21,10 +21,18 @@ const registrarProduccion = async (req, res) => {
 
     await produccion.save();
 
-    await Producto.findByIdAndUpdate(
-      productoExistente._id,
-      { $inc: { existencia: cantidadProducida } }
-    );
+    const deposito = await Deposito.findOne({ producto: productoExistente._id });
+
+    if (deposito) {
+      deposito.cantidad = Number(deposito.cantidad) + Number(cantidadProducida);
+      await deposito.save();
+    } else {
+      const nuevoDeposito = new Deposito({
+        producto: productoExistente._id,
+        cantidad: Number(cantidadProducida),
+      });
+      await nuevoDeposito.save();
+    }
 
     return res.status(201).json({ mensaje: 'Producción registrada exitosamente', produccion });
   } catch (error) {
@@ -42,7 +50,11 @@ const obtenerProducciones = async (req, res) => {
       ? { $or: [{ nombre: { $regex: search, $options: 'i' } }] }
       : {};
 
-    const docs = await Produccion.find(filtro).skip(skip).limit(Number(limit)).populate('producto'); 
+    const docs = await Produccion.find(filtro)
+      .sort({fechaProduccion: -1})
+      .skip(skip)
+      .limit(Number(limit))
+      .populate('producto');
     const totalDocs = await Produccion.countDocuments(filtro);
 
     res.status(200).json({ docs, totalDocs, limit: Number(limit) });
@@ -50,6 +62,45 @@ const obtenerProducciones = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener las producciones' });
   }
 };
+
+const obtenerProductosDeposito = async (req, res) => {
+  try {
+    const productosDeposito = await Deposito.find().populate('producto', 'nombreProducto')
+    res.status(200).json({productosDeposito})
+  } catch (error) {
+    console.error("Error al obtener el estado del deposito:", error)
+    res.status(500).json({error: 'Error al obtener los producto del deposito'})
+  }
+}
+
+const editarCantidadDeposito = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {cantidad} = req.body;
+
+    if (typeof cantidad !== 'number' || cantidad < 0) {
+      return res.status(400).json({error: 'La cantidad debe ser un numero mayor a 0'})
+    }
+
+    const depositoActualizado = await Deposito.findByIdAndUpdate(
+      id,
+      { cantidad },
+      { new: true } 
+    );
+
+    if (!depositoActualizado) {
+      return res.status(404).json({ error: 'Depósito no encontrado' });
+    }
+
+    res.status(200).json({
+      mensaje: 'Cantidad actualizada exitosamente',
+      deposito: depositoActualizado,
+    });
+  } catch (error) {
+    console.error('Error al actualizar la cantidad en el depósito:', error);
+    res.status(500).json({ error: 'Error al actualizar la cantidad en el depósito' });
+  }
+}
 
 const eliminarProduccion = async (req, res) => {
   const {id} = req.params
@@ -68,4 +119,4 @@ const eliminarProduccion = async (req, res) => {
 
 }
 
-module.exports = { registrarProduccion, obtenerProducciones, eliminarProduccion };
+module.exports = { registrarProduccion, obtenerProducciones, obtenerProductosDeposito, editarCantidadDeposito, eliminarProduccion };
