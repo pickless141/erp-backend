@@ -9,7 +9,7 @@ reposicionRoutes.post('/', reposicionController.agregarReposicion);
 reposicionRoutes.get('/', checkRole(['admin', 'vendedor', 'repositor', 'tercerizado']), filtroRol, reposicionController.obtenerReposiciones);
 reposicionRoutes.get('/:id', reposicionController.buscarReposicionPorId);
 reposicionRoutes.get('/tienda/:tiendaId', reposicionController.obtenerReposicionesPorTienda);
-reposicionRoutes.get('/ultimas/:tiendaId', filtrarReposiciones, reposicionController.ultimasReposicionPorTienda);
+reposicionRoutes.get('/ultimas/:tiendaId', checkRole(['admin', 'repositor', 'vendedor', 'tercerizado']), filtrarReposiciones, reposicionController.ultimasReposicionPorTienda);
 reposicionRoutes.get('/:id/detalles-productos', reposicionController.obtenerDetallesProductos);
 reposicionRoutes.delete('/:id', reposicionController.eliminarReposicion);
 
