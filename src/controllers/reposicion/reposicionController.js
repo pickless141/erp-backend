@@ -6,7 +6,7 @@ const Producto = require('../../models/producto/Producto.js')
 // Controlador para crear una reposición de productos en una tienda
 const agregarReposicion = async (req, res) => {
   try {
-    const { tiendaId, productos, categoria } = req.body;
+    const { tiendaId, productos, categoria, comentario } = req.body;
     const usuarioId = req.user.id;
 
     const tienda = await Tienda.findById(tiendaId);
@@ -35,7 +35,8 @@ const agregarReposicion = async (req, res) => {
     const nuevaReposicion = new Reposicion({
       tienda: tiendaId,
       productos: productosConInfo,
-      usuario: usuarioId
+      usuario: usuarioId,
+      comentario
     });
 
     await nuevaReposicion.save();
@@ -116,6 +117,7 @@ const buscarReposicionPorId = async (req, res) => {
     res.status(500).json({ error: 'Error al buscar la reposición' });
   }
 };
+
 const obtenerDetallesProductos = async (req, res) => {
   const reposicionId = req.params.id;
 

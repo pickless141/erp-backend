@@ -35,6 +35,9 @@ const reposicionSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  comentario: {
+    type: String,
+  },
 });
 
 const Reposicion = mongoose.model('Reposicion', reposicionSchema);
