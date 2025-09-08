@@ -1,32 +1,92 @@
+const mongoose = require('mongoose');
 const Producto = require('../../models/producto/Producto');
+const Categoria = require('../../models/categoria/Categoria');
 
 // Controlador para crear un nuevo producto
 const crearProducto = async (req, res) => {
-  const { nombreProducto,lote, codBarra } = req.body;
-
   try {
-    const nuevoProducto = new Producto({
-      nombreProducto,
+    const { nombreProducto, lote, codBarra, categoriaId, categoriaNombre } = req.body;
+
+    if (!nombreProducto?.trim()) {
+      return res.status(400).json({ error: 'nombreProducto es requerido' });
+    }
+
+    let categoriaDoc;
+
+    if (categoriaId) {
+      categoriaDoc = await Categoria.findById(categoriaId);
+      if (!categoriaDoc) {
+        return res.status(400).json({ error: 'La categoría indicada no existe' });
+      }
+    } else if (categoriaNombre?.trim()) {
+      const nombre = categoriaNombre.trim();
+      categoriaDoc = await Categoria.findOneAndUpdate(
+        { nombre },
+        { $setOnInsert: { nombre } },
+        { new: true, upsert: true }
+      );
+    } else {
+      return res.status(400).json({ error: 'Enviá categoriaId o categoriaNombre' });
+    }
+
+    const producto = await Producto.create({
+      nombreProducto: nombreProducto.trim(),
       lote,
-      codBarra
+      codBarra,
+      categoria: categoriaDoc._id
     });
-    nuevoProducto.existencia = 0;
 
-    await nuevoProducto.save();
+    await producto.populate('categoria', 'nombre');
 
-    res.status(201).json({ mensaje: 'Producto creado exitosamente', producto: nuevoProducto });
+    return res.status(201).json({
+      mensaje: 'Producto creado exitosamente',
+      producto
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Error al crear un nuevo producto' });
+    if (error?.code === 11000) {
+      const campo = Object.keys(error.keyPattern || {})[0] || 'campo único';
+      return res.status(409).json({ error: `Valor duplicado en ${campo}` });
+    }
+    console.error(error);
+    return res.status(500).json({ error: 'Error al crear un nuevo producto' });
   }
-};
-
+}
 // Controlador para obtener todos los productos
 const obtenerTodosLosProductos = async (req, res) => {
   try {
-    const productos = req.filtrarProductos; 
-    res.status(200).json(productos);
+    const { search = '', categoriaId = '', page = 1, limit = 10} = req.query;
+
+    const filters = {};
+
+    if (search.trim()) {
+      filters.nombreProducto = { $regex: search.trim(), $options: 'i' }; 
+    }
+
+    if (categoriaId && mongoose.Types.ObjectId.isValid(categoriaId)) {
+      filters.categoria = categoriaId;
+    }
+
+    const pageNumber = parseInt(page, 10);
+    const pageSize = parseInt(limit, 10);
+
+    const total = await Producto.countDocuments(filters);
+
+    const productos = await Producto.find(filters)
+      .populate('categoria', 'nombre')
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize)
+      .exec();
+
+    res.status(200).json({
+      total,
+      page: pageNumber,
+      limit: pageSize,
+      totalPages: Math.ceil(total / pageSize),
+      productos,
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener todos los productos' });
+    console.error('Error al obtener productos:', error);
+    res.status(500).json({ error: 'Error al obtener los productos' });
   }
 };
 
@@ -49,20 +109,41 @@ const obtenerProductoPorId = async (req, res) => {
 //Controlador para actualizar 
 const actualizarProductoPorId = async (req, res) => {
   const productoId = req.params.id;
-  const { nombreProducto, lote, existencia, codBarra } = req.body;
+  const { nombreProducto, lote, existencia, codBarra, categoriaId, categoriaNombre } = req.body;
 
   try {
     const productoExistente = await Producto.findById(productoId);
-
     if (!productoExistente) {
       return res.status(404).json({ error: 'El producto no existe' });
     }
 
+    let categoriaAsignar = null;
+
+    if (categoriaId) {
+      if (!mongoose.Types.ObjectId.isValid(categoriaId)) {
+        return res.status(400).json({ error: 'categoriaId inválido' });
+      }
+      const cat = await Categoria.findById(categoriaId);
+      if (!cat) return res.status(400).json({ error: 'La categoría indicada no existe' });
+      categoriaAsignar = cat._id;
+    } else if (categoriaNombre && categoriaNombre.trim()) {
+      const nombre = categoriaNombre.trim();
+      const cat = await Categoria.findOneAndUpdate(
+        { nombre },
+        { $setOnInsert: { nombre } },
+        { new: true, upsert: true }
+      );
+      categoriaAsignar = cat._id;
+    }
+
+    const update = { nombreProducto, lote, existencia, codBarra };
+    if (categoriaAsignar) update.categoria = categoriaAsignar; 
+
     const producto = await Producto.findOneAndUpdate(
       { _id: productoId },
-      { nombreProducto, lote, existencia,codBarra },
+      update,
       { new: true }
-    );
+    ).populate('categoria', 'nombre'); 
 
     if (!producto) {
       return res.status(404).json({ error: 'El producto no existe' });
@@ -70,7 +151,40 @@ const actualizarProductoPorId = async (req, res) => {
 
     res.status(200).json({ mensaje: 'Producto actualizado exitosamente', producto });
   } catch (error) {
+    if (error?.code === 11000) {
+      const campo = Object.keys(error.keyPattern || {})[0] || 'campo único';
+      return res.status(409).json({ error: `Valor duplicado en ${campo}` });
+    }
+    console.error(error);
     res.status(500).json({ error: 'Error al actualizar el producto' });
+  }
+};
+
+const obtenerCategorias = async (req, res) => {
+  try {
+    const { includeInactivas = 'false', q = '', format } = req.query;
+    
+    const filter = includeInactivas === 'true' ? {} : { activa: true };
+    if (q) filter.nombre = { $regex: q, $options: 'i' };
+
+    const categorias = await Categoria.find(filter)
+      .sort({ nombre: 1 })
+      .select('nombre activa');
+
+    if (format === 'options') {
+      return res.status(200).json(
+        categorias.map(c => ({
+          value: c._id,
+          label: c.nombre,
+          activa: c.activa
+        }))
+      );
+    }
+
+    return res.status(200).json(categorias);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error al obtener las categorías' });
   }
 };
 
@@ -92,4 +206,4 @@ const eliminarProducto = async (req, res) => {
 
 }
 
-module.exports = { crearProducto, obtenerTodosLosProductos ,actualizarProductoPorId, obtenerProductoPorId, eliminarProducto };
+module.exports = { crearProducto, obtenerTodosLosProductos ,actualizarProductoPorId, obtenerProductoPorId, obtenerCategorias, eliminarProducto };
