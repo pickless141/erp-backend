@@ -106,6 +106,41 @@ const obtenerProductoPorId = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener el producto' });
   }
 };
+const productosSelect = async (req, res) => {
+  try {
+    const { q = "", limit = 100, format } = req.query;
+
+    const filter = {};
+    if (q && q.trim()) {
+      filter.nombreProducto = { $regex: q.trim(), $options: "i" };
+    }
+
+    const pageSize = Math.min(parseInt(limit, 10) || 100, 500);
+
+    const productos = await Producto.find(filter)
+      .sort({ nombreProducto: 1 })
+      .select("_id nombreProducto categoria codBarra lote")
+      .populate("categoria", "nombre")
+      .limit(pageSize)
+      .lean();
+
+    if (format === "options") {
+      const options = productos.map(p => ({
+        value: p._id,
+        label: p.nombreProducto,
+        categoriaId: p.categoria?._id || null,
+        categoriaNombre: p.categoria?.nombre || null,
+        codBarra: p.codBarra || null,
+        lote: p.lote || null,
+      }));
+      return res.status(200).json(options);
+    }
+    return res.status(200).json(productos);
+  } catch (error) {
+    console.error("Error al obtener productos para select:", error);
+    return res.status(500).json({ error: "Error al obtener los productos para el select" });
+  }
+};
 //Controlador para actualizar 
 const actualizarProductoPorId = async (req, res) => {
   const productoId = req.params.id;
@@ -187,6 +222,49 @@ const obtenerCategorias = async (req, res) => {
     return res.status(500).json({ error: 'Error al obtener las categorías' });
   }
 };
+const productosPorCategoria = async (req, res) => {
+  try {
+    const categoriaId = req.params.categoriaId || req.query.categoriaId;
+    const { q = "", format } = req.query;
+
+    if (!categoriaId || !mongoose.Types.ObjectId.isValid(categoriaId)) {
+      return res.status(400).json({ error: "categoriaId inválido o no enviado" });
+    }
+
+    const existe = await Categoria.exists({ _id: categoriaId });
+    if (!existe) {
+      return res.status(404).json({ error: "La categoría indicada no existe" });
+    }
+
+    const filter = { categoria: categoriaId };
+    if (q && q.trim()) {
+      filter.nombreProducto = { $regex: q.trim(), $options: "i" };
+    }
+
+    const productos = await Producto.find(filter)
+      .sort({ nombreProducto: 1 })
+      .select("_id nombreProducto categoria codBarra lote")
+      .populate("categoria", "nombre")
+      .lean();
+
+    if (format === "options") {
+      const options = productos.map((p) => ({
+        value: p._id,
+        label: p.nombreProducto,
+        categoriaId: p.categoria?._id || null,
+        categoriaNombre: p.categoria?.nombre || null,
+        codBarra: p.codBarra || null,
+        lote: p.lote || null,
+      }));
+      return res.status(200).json(options);
+    }
+
+    return res.status(200).json(productos);
+  } catch (error) {
+    console.error("Error al obtener productos por categoría:", error);
+    return res.status(500).json({ error: "Error al obtener productos por categoría" });
+  }
+};
 
 const eliminarProducto = async (req, res) => {
   const { id } = req.params;
@@ -206,4 +284,4 @@ const eliminarProducto = async (req, res) => {
 
 }
 
-module.exports = { crearProducto, obtenerTodosLosProductos ,actualizarProductoPorId, obtenerProductoPorId, obtenerCategorias, eliminarProducto };
+module.exports = { crearProducto, obtenerTodosLosProductos, productosSelect ,actualizarProductoPorId, obtenerProductoPorId, obtenerCategorias, productosPorCategoria, eliminarProducto };
