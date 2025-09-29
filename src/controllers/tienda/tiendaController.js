@@ -46,10 +46,16 @@ const obtenerTodasLasTiendas = async (req, res) => {
     let totalDocs;
 
     if (page && limit) {
-      tiendas = await Tienda.find(filtro).skip(skip).limit(limit);
+      tiendas = await Tienda.find(filtro)
+        .collation({ locale: 'es', strength: 1 })
+        .sort({ nombreTienda: 1 })                
+        .skip(skip)
+        .limit(limit);
       totalDocs = await Tienda.countDocuments(filtro);
     } else {
-      tiendas = await Tienda.find(filtro);
+      tiendas = await Tienda.find(filtro)
+        .collation({ locale: 'es', strength: 1 }) 
+        .sort({ nombreTienda: 1 });            
       totalDocs = tiendas.length;
     }
 

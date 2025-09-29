@@ -31,7 +31,12 @@ const obtenerTodosLosClientes = async (req, res) => {
       ? { $or: [{ nombre: { $regex: search, $options: 'i' } }] }
       : {};
 
-    const clientes = await Cliente.find(filtro).skip(skip).limit(limit);
+    const clientes = await Cliente.find(filtro)
+      .collation({ locale: 'es', strength: 1 }) 
+      .sort({ nombre: 1 }) 
+      .skip(skip)
+      .limit(limit);
+
     const totalDocs = await Cliente.countDocuments(filtro);
 
     res.status(200).json({ docs: clientes, totalDocs, limit });
