@@ -1,11 +1,19 @@
 const Producto = require('../models/producto/Producto');
+const Categoria = require('../models/categoria/Categoria'); 
 
 const filtrarProductosCategoria = async (req, res, next) => {
   const usuarioEmpresa = req.user.empresa;  
 
   try {
     if (usuarioEmpresa === 'EatWell') {
-      req.filtrarProductos = await Producto.find({ categoria: 'EatWell' });  
+      const categoriaEatWell = await Categoria.findOne({ nombre: 'EatWell' }).select('_id');
+
+      if (!categoriaEatWell) {
+        req.filtrarProductos = [];
+        return next();
+      }
+
+      req.filtrarProductos = await Producto.find({ categoria: categoriaEatWell._id });  
     } else if (usuarioEmpresa === 'Lievito') {
       req.filtrarProductos = await Producto.find(); 
     }

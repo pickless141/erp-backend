@@ -106,8 +106,14 @@ const obtenerTodosLosPedidos = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const perPage = parseInt(req.query.perPage) || 3;
 
-    const totalDocs = await Pedido.countDocuments();
-    const docs = await Pedido.find()
+    const { estado } = req.query;
+    const filters = {};
+    if (estado) {
+      filters.estado = String(estado).toUpperCase();
+    }
+
+    const totalDocs = await Pedido.countDocuments(filters);
+    const docs = await Pedido.find(filters)
       .sort({ fechaPedido: -1 })
       .skip((page - 1) * perPage)
       .limit(perPage)
@@ -116,12 +122,14 @@ const obtenerTodosLosPedidos = async (req, res) => {
         select: 'nombreCliente nombreTienda',
       })
       .populate('usuario', 'nombre apellido')
-      .select('estado descripcion usuario total IVA tienda'); 
+      .select('estado descripcion usuario total IVA tienda fechaPedido'); 
 
     const response = {
-      docs, 
+      docs,
       totalDocs,
       limit: perPage,
+
+      estado: estado ? String(estado).toUpperCase() : null,
     };
 
     res.status(200).json(response);

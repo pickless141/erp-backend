@@ -64,7 +64,13 @@ const obtenerReposiciones = async (req, res) => {
     const filter = {};
 
     if (req.user && req.user.empresa === 'EatWell') {
-      const productosEatWell = await Producto.find({ categoria: 'EatWell' }).select('_id');
+      const categoriaEatWell = await Categoria.findOne({ nombre: 'EatWell' }).select('_id');
+    
+      if (!categoriaEatWell) {
+        return res.status(200).json({ docs: [], totalDocs: 0, limit });
+      }
+    
+      const productosEatWell = await Producto.find({ categoria: categoriaEatWell._id }).select('_id');
       filter['productos.producto'] = { $in: productosEatWell.map(p => p._id) };
     }
 
@@ -194,6 +200,7 @@ const obtenerReposicionesPorTienda = async (req, res) => {
       .populate('usuario', 'nombre apellido email')
       .populate('productos.producto', 'categoria nombreProducto')
       .skip(skip)
+      .sort({ fechaReposicion: -1 })
       .limit(limit);
 
     if (reposiciones.length === 0) {
