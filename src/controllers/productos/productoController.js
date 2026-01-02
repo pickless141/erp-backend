@@ -58,6 +58,22 @@ const obtenerTodosLosProductos = async (req, res) => {
 
     const filters = {};
 
+    if (req.user?.empresa === 'EatWell') {
+      const categoriaEatWell = await Categoria.findOne({ nombre: 'EatWell' }).select('_id');
+    
+      if (!categoriaEatWell) {
+        return res.status(200).json({
+          total: 0,
+          page: parseInt(page, 10),
+          limit: parseInt(limit, 10),
+          totalPages: 0,
+          productos: [],
+        });
+      }
+    
+      filters.categoria = categoriaEatWell._id;
+    }
+
     if (search.trim()) {
       filters.nombreProducto = { $regex: search.trim(), $options: 'i' }; 
     }
@@ -200,7 +216,11 @@ const obtenerCategorias = async (req, res) => {
     const { includeInactivas = 'false', q = '', format } = req.query;
     
     const filter = includeInactivas === 'true' ? {} : { activa: true };
-    if (q) filter.nombre = { $regex: q, $options: 'i' };
+    if (req.user?.empresa === 'EatWell') {
+      filter.nombre = 'EatWell';
+    } else if (q) {
+      filter.nombre = { $regex: q, $options: 'i' };
+    }
 
     const categorias = await Categoria.find(filter)
       .sort({ nombre: 1 })
